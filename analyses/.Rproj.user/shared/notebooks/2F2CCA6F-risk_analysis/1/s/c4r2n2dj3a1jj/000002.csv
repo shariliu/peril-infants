@@ -1,0 +1,6 @@
+"0","```r
+  return length(unique(data$subj))
+
+```"
+"1","Error: unexpected symbol in \"  return length\"
+"
