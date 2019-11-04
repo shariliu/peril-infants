@@ -8,11 +8,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-![**Figure 1.** Still frames from videos shown to infants during Experiments 1 and 3. Infants first saw (A) an attention-getting star wiggle above the deep vs shallow cliff. Next, they saw (B) a video of an inanimate object falling off the edge of a shallow, medium and deep cliff. Then, during familiarization (C), infants saw the agent jump over cliffs of medium depth to reach a goal (half the time, the agent acted towards the right, and the other half, it acted towards the left). Finally, at test (D), infants saw the agent face a choice between two identical copies of its goal, one at a high risk, and one at a low risk, and alternatingly chose the higher-risk or lower-risk action. Black lines indicate trajectories of motion, and circles indicate start- and end-points of motion. ](/Users/shariliu/Documents/HarvardLDS/Studies/RISK/github/figures/exp1_fig.png)
-
-
-![**Figure 2.** Still frames from videos shown to infants during Experiments 2 and 4. Infants first saw (A) a video of an inanimate object falling off the edge of a shallow, medium and deep cliff. Then, during familiarization (B), infants saw the agent jump a small but not a medium cliff for one goal (Yellow, left panels) and a medium but not a deep cliff for the other goal (Blue, right panels). Finally, at test (C), infants saw the agent face a choice between the two goals from familiarization, and alternatingly chose the higher-risk or lower-risk action. Black lines indicate trajectories of motion, and circles indicate start- and end-points of motion.](/Users/shariliu/Documents/HarvardLDS/Studies/RISK/github/figures/exp2_fig.png)
-
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(comment = "##", echo=TRUE, warning=FALSE, message=FALSE, cache=FALSE, include=TRUE, dependson="risk.wide")
 options(scipen = 0, digits = 3)
@@ -361,26 +356,78 @@ summary.pre.1013 <- summarySEwithin(data = mr.pre, measurevar = "look",  withinv
 
 ```
 
-# Number of trials included and excluded
-
-```{r}
-# long.tp %>%
-#   filter(cost == "Risk") %>%
-#   group_by(exp) %>%
-#   summarise_all(funs(sum(is.na(.)))) %>%
-#   View()
+```{r ntrialsexcluded}
+nexclude <- long.tp %>%
+  filter(cost == "Risk") %>%
+  group_by(exp) %>%
+  summarise_all(funs(sum(is.na(.))))
 ```
 
+## Reliability
+```{r reliability}
+
+rel <- read.csv(file = "risk_reliability.csv", header=TRUE)
+exp1 <- rel %>% filter(experiment.new=="Exp.1")
+exp2 <- rel %>% filter(experiment.new=="Exp.2")
+exp3 <- rel %>% filter(experiment.new=="Exp.3")
+
+exp1rel <- icc(data.frame(exp1$secondary.look, exp1$orig.look),model="one", type="agreement")
+
+exp2rel <- icc(data.frame(exp2$secondary.look, exp2$orig.look),model="one", type="agreement")
+
+exp3rel <- icc(data.frame(exp3$secondary.look, exp3$orig.look),model="one", type="agreement")
+
+```
 
 # Figures
 
-```{r mr.fig, include=TRUE}
-iris %>%
-  filter(Species !="setosa") %>%
-  ggplot(aes(Species, Sepal.Length, fill=Species))+
-  geom_boxplot()+
-  geom_jitter(width = .1, height=0.5)
+```{r fig.exp12, include=TRUE, fig.width=16}
+risk.avg$type<- relevel(risk.avg$type, "Higher")
+risk1 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, look, fill = type))+
+    facet_grid(~exp+agegroup)+
+  geom_boxplot(outlier.colour = NA, alpha = 0.8)+
+  stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
+  ylab("Looking Time (s)") +
+  xlab("Test Event") +
+  geom_errorbar(data = summary.avg %>% filter(exp=="Exp.2" | exp =="Exp.1"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
+  # geom_point(data = summary.avg %>% filter(experiment=="RISK10" | experiment =="RISK13"), colour="red",position = position_dodge(width = 0), aes(y=look))+
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.2, aes(group = subj))+
+  scale_x_discrete(labels = c("Higher Peril Goal\n(Higher Value)", "Lower Peril Goal\n(Lower Value)"))+
+  # theme_linedraw(15)+
+  theme(legend.position="none")+
+  scale_fill_brewer(palette="Greys")+
+  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.354", "ß=0.168")) +
+  scale_colour_brewer(palette="Greys")+
+  background_grid(major = "xy", minor = "xy")
 
+
+risk2 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, look, fill = type))+
+  geom_boxplot(outlier.colour = NA, alpha = 0.8)+
+  stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
+  ylab("Looking Time (s)") +
+  xlab("Test Event") +
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1)+
+  geom_line(alpha = 0.2, aes(group = subj))+
+  # facet_grid(~agegroup)+
+  geom_errorbar(data = summary.1013 %>% filter(task=="infer.value"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
+  # geom_point(data = summary.avg, aes(type, look))+
+  scale_x_discrete(labels = c("Higher Peril Goal\n(Higher Value)", "Lower Peril Goal\n(Lower Value)"))+
+  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.265")) +
+  # theme_linedraw(15)+
+  theme(legend.position="none")+
+  scale_fill_brewer(palette="Greys")+
+  scale_colour_brewer(palette="Greys")+
+  background_grid(major = "xy", minor = "xy")
+
+plot_grid(risk1, risk2, labels = c("A", "B"), nrow=1, rel_widths=c(2,1.2))
+```
+
+**Figure 3.** Looking time towards the test events presenting approaches to the goals attained through actions of higher vs. lower peril in Experiments 1-2, both (A) within and (B) collapsed across experiments.  Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data.  Beta coefficients (ß) indicate effect sizes in standard deviations.
+
+```{r fig.exp3, include=TRUE, fig.width=16, fig.height=16}
 mr1 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill = type)) +
   geom_boxplot(outlier.colour = NA, alpha = 0.8)+
   stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
@@ -392,7 +439,7 @@ mr1 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   facet_grid(~exp+agegroup)+
   geom_errorbar(data = summary.avg %>% filter(exp == "Exp.3"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
-  scale_x_discrete(labels = c("Shallower Trench\n(Expected)","Deeper Trench\n (Unexpected)"))+
+  scale_x_discrete(labels = c("Less Perilous\n(Shallower Trench)","More Perilous\n(Deeper Trench)"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.386", "*ß=0.356")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -411,7 +458,7 @@ mr2 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   # facet_grid(~agegroup)+
   geom_errorbar(data = summary.1013 %>% filter(task=="min.risk"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
-  scale_x_discrete(labels = c("Shallower Trench\n(Expected)","Deeper Trench\n (Unexpected)"))+
+  scale_x_discrete(labels = c("Less Perilous\n(Shallower Trench)","More Perilous\n(Deeper Trench)"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("***ß=0.410")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -430,7 +477,7 @@ mr3 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   facet_grid(~exp+agegroup)+
   # stat_summary(fun.data = mean_cl_normal, geom = "errorbar", colour="red", position = position_dodge(width = 5), width = 0) +
   geom_errorbar(data = summary.pre, colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci), alpha = 0.8) +
-  scale_x_discrete(labels = c("Shallower Trench","Deeper Trench"))+
+  scale_x_discrete(labels = c("Shallower Trench", "Deeper Trench"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("ß=-0.109", "**ß=-0.339")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -459,73 +506,9 @@ mr4 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
 
 plot_grid(mr1, mr2, mr3, mr4, labels = c("A", "B", "C", "D"), rel_widths = c(1.8,1,1.8,1))
 
-plot_grid(mr2, mr4, labels = c("A", "B"))
-
 ```
 
-**Figure 3.** Looking time in seconds towards (A-B) the higher versus lower-risk test event in Experiments 1 (N=30 10-month-old infants) and 3 (N=30 13-month-old infants), and towards (C-D) the deeper vs shallower cliff during control events in Experiments 1 and 3, (A,C) faceted by experiment and (B, D) collapsing across experiments. Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data. Beta coefficients (ß) list effect sizes in standard deviation units.
-
-```{r risk.fig, include=TRUE}
-risk.avg$type<- relevel(risk.avg$type, "Higher")
-risk1 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, look, fill = type))+
-    facet_grid(~exp+agegroup)+
-  geom_boxplot(outlier.colour = NA, alpha = 0.8)+
-  stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
-  ylab("Looking Time (s)") +
-  xlab("Test Event") +
-  geom_errorbar(data = summary.avg %>% filter(exp=="Exp.2" | exp =="Exp.1"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
-  # geom_point(data = summary.avg %>% filter(experiment=="RISK10" | experiment =="RISK13"), colour="red",position = position_dodge(width = 0), aes(y=look))+
-  coord_cartesian(ylim = c(0, 65)) +
-  geom_point(alpha = 0.1)+
-  geom_line(alpha = 0.2, aes(group = subj))+
-  scale_x_discrete(labels = c("Higher Value\n(Expected)", "Lower Value\n(Unexpected)"))+
-  # theme_linedraw(15)+
-  theme(legend.position="none")+
-  scale_fill_brewer(palette="Greys")+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.354", "ß=0.168")) +
-  scale_colour_brewer(palette="Greys")+
-  background_grid(major = "xy", minor = "xy")
-
-
-risk2 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, look, fill = type))+
-  geom_boxplot(outlier.colour = NA, alpha = 0.8)+
-  stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
-  ylab("Looking Time (s)") +
-  xlab("Test Event") +
-  coord_cartesian(ylim = c(0, 65)) +
-  geom_point(alpha = 0.1)+
-  geom_line(alpha = 0.2, aes(group = subj))+
-  # facet_grid(~agegroup)+
-  geom_errorbar(data = summary.1013 %>% filter(task=="infer.value"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
-  # geom_point(data = summary.avg, aes(type, look))+
-  scale_x_discrete(labels = c("Higher Value\n(Expected)", "Lower Value\n(Unexpected)"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.265")) +
-  # theme_linedraw(15)+
-  theme(legend.position="none")+
-  scale_fill_brewer(palette="Greys")+
-  scale_colour_brewer(palette="Greys")+
-  background_grid(major = "xy", minor = "xy")
-
-plot_grid(risk1, risk2, labels = c("A", "B"), nrow=1, rel_widths=c(2,1))
-```
-
-**Figure 4.** Looking time in seconds towards the higher versus lower-risk test event in Experiments 2 (N=32 10-month-old infants) and 4 (N=32 13-month-old infants), (A) faceted by experiment and (B) collapsing across experiments. Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data. Beta coefficients (ß) list effect sizes in standard deviation units.
-
-```{r log, include = TRUE}
-# is a lognormal transformation justified given the distribution of looks?
-fig.S1 <- ggplot(data = risk.avg, aes(look, fill=exp))
-fig.S1 +
-  geom_density(alpha = 0.5)+
-  # geom_text(aes(experiment))+
-  theme_linedraw(15)+
-  xlab("Looking Time (s)")+
-  scale_fill_brewer(palette="Set2")
-
-normal.ll <- fitdistr(risk.avg$look, "normal")$loglik
-lognormal.ll <- fitdistr(risk.avg$look, "lognormal")$loglik
-```
-
-**Figure S1.** Density plot of looking times during test for Experiments 1 and 2 (total N=`r length(unique(risk.avg$subj))`). Maximum-likelihood fitting revealed that the lognormal distribution (log likelihood=`r lognormal.ll`) provides a better fit to these data than the normal distribution (log likelihood=`r normal.ll`).
+**Figure 4.**  Looking times from Experiment during the test events, in which the agent chose to jump across a deeper or shallower trench for a goal (A and B), and during the control events, in which infants’ attention was drawn over the deeper and shallower trenches (C and D). The looking times are presented by separately (A and C) and collapsed across age groups (B and D). Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data. Beta coefficients (ß) list effect sizes in standard deviations.
 
 # Experiment 1: Inferring value from risk (13-month-old infants)
 
@@ -559,24 +542,6 @@ exp1.results <- cbind(exp1.1.table, exp1.1.betas,exp1.1.ci)
 
 
 ```
-
-## Power analysis over experiment 1
-```{r exp1.power}
-sim <- powerCurve(extend(exp1.1, along="subj", n=500),
-                       along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
-plot(sim)
-print(sim)
-
-```
-
-
-```{r exp1.bf}
-bayesfactor_models(exp1.0, exp1.1, denominator=1)
-bayesfactor_models(exp2.0, exp2.1, denominator=1)
-bayesfactor_models(exp1.0, exp1.1, denominator=1)
-
-```
-
 
 # Experiment 2: Inferring value from risk (10-month-old infants)
 
@@ -665,32 +630,6 @@ exp12.2.betas <- gen.beta(exp12.2.beta)
 
 exp12.results2 <- cbind(exp12.2.table, exp12.2.betas,exp12.2.ci)
 ```
-
-
-```{r exp12.bf}
-
-exp12.2.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp12.avg %>% filter(subj != "S5_25"))
-
-BF_BIC <- exp((BIC(exp12.2.cooks) - BIC(exp12.1.cooks))/2) # go from BICS to Bayes Factors
-
-BF_BIC # extreme evidence for H0, which is that there's no difference between the age groups
-```
-
-
-<!-- # Reliability -->
-
-```{r generate.rel}
-# reliability <- wide %>% filter(reliability ==1) %>%
-#   select(subj, rn, sex, experiment, test1, test2, test3, test4) %>%
-#   gather(trial, look, test1:test4) %>%
-#   mutate(trialn = str_remove(trial, "test")) %>%
-#   group_by(subj, trialn)
-
-# write.csv(reliability, "risk_rel.csv")
-```
-
-
 
 # Comparing Exp 2 and LUTS Exp 3
 ```{r exp2.luts.diff}
@@ -1135,19 +1074,28 @@ The two groups of infants did not differ in looking time during test events (`r 
 
 # Supplemental Analyses
 
-## Reliability
-```{r}
+```{r log, include = TRUE}
+# is a lognormal transformation justified given the distribution of looks?
+fig.S1 <- ggplot(data = risk.avg, aes(look, fill=exp))
+fig.S1 +
+  geom_density(alpha = 0.5)+
+  # geom_text(aes(experiment))+
+  theme_linedraw(15)+
+  xlab("Looking Time (s)")+
+  scale_fill_brewer(palette="Set2")
 
-rel <- read.csv(file = "risk_reliability.csv", header=TRUE)
-exp1 <- rel %>% filter(experiment.new=="Exp.1")
-exp2 <- rel %>% filter(experiment.new=="Exp.2")
-exp3 <- rel %>% filter(experiment.new=="Exp.3")
+normal.ll <- fitdistr(risk.avg$look, "normal")$loglik
+lognormal.ll <- fitdistr(risk.avg$look, "lognormal")$loglik
+```
 
-exp1rel <- icc(data.frame(exp1$secondary.look, exp1$orig.look),model="one", type="agreement")
+**Figure S1.** Density plot of looking times during test for Experiments 1 and 2 (total N=`r length(unique(risk.avg$subj))`). Maximum-likelihood fitting revealed that the lognormal distribution (log likelihood=`r lognormal.ll`) provides a better fit to these data than the normal distribution (log likelihood=`r normal.ll`).
 
-exp2rel <- icc(data.frame(exp2$secondary.look, exp2$orig.look),model="one", type="agreement")
-
-exp3rel <- icc(data.frame(exp3$secondary.look, exp3$orig.look),model="one", type="agreement")
+## Power analysis over experiment 1
+```{r exp1.power}
+sim <- powerCurve(extend(exp1.1, along="subj", n=500),
+                       along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
+plot(sim)
+print(sim)
 
 ```
 
