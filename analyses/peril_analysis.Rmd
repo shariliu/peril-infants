@@ -9,7 +9,7 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(comment = "##", echo=TRUE, warning=FALSE, message=FALSE, cache=FALSE, include=TRUE, dependson="risk.wide")
+knitr::opts_chunk$set(comment = "##", echo=TRUE, warning=FALSE, message=FALSE, cache=TRUE, include=TRUE, dependson="risk.wide")
 options(scipen = 0, digits = 3)
 
 ## load required packages
@@ -22,7 +22,7 @@ ipak <- function (pkg) {
 
 # devtools::install_github("mhtess/rwebppl")
 
-packages <- c("tidyverse", "Hmisc", "lattice", "multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "bayestestR")
+packages <- c("tidyverse", "Hmisc", "lattice", "multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "plyr", "dplyr")
 
 ipak(packages)
 
@@ -362,14 +362,14 @@ nexclude <- long.tp %>%
   group_by(exp) %>%
   select_if(function(x) any(is.na(x))) %>% 
   summarise_each(funs(sum(is.na(.)))) %>%
-  select(exp, loglook) %>%
-  rename(missing = loglook)
+  dplyr::select(exp, loglook) %>%
+  dplyr::rename(missing = loglook)
 
 totaltrials <- long.tp %>%
   filter(cost=="Risk") %>%
   group_by(exp) %>%
   tally() %>%
-  rename(total = n)
+  dplyr::rename(total = n)
 
 ntrials <- full_join(nexclude, totaltrials)
 ```
@@ -1088,7 +1088,7 @@ Thirteen-month-old infants looked longer at test when the agent, at test, chose 
 
 #### Results in 10-month-old infants
 
-Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results2,3,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
+Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results2,3,1,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
 
 #### Comparing 10-month-old and 13-month-old infants
 
