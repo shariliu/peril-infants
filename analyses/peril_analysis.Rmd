@@ -9,8 +9,8 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(comment = "##", echo=TRUE, warning=FALSE, message=FALSE, cache=TRUE, include=TRUE, dependson="risk.wide")
-options(scipen = 0, digits = 3)
+knitr::opts_chunk$set(comment = "##", echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, include=FALSE, dependson="risk.wide")
+options(scipen = 0, digits = 2)
 
 ## load required packages
 ipak <- function (pkg) {
@@ -294,6 +294,14 @@ summarySEwithin <- function(data=NULL, measurevar, betweenvars=NULL, withinvars=
   merge(datac, ndatac)
 }
 
+# function that returns ICC 
+reporticc <- function(output, places) {
+  mainstat <- output$value
+  upperci <- output$ubound
+  lowerci <- output$lbound
+  statistic <- paste("ICC=", round(mainstat,places), ", 95% CI [", round(lowerci, places), ", ", round(upperci, places), "]", sep = "")
+  return(statistic)
+}
 
 # function that returns column of standardized betas from lmer model
 gen.beta <- function(model) {
@@ -566,7 +574,7 @@ exp1.results <- cbind(exp1.1.table, exp1.1.betas,exp1.1.ci)
 Our final sample of participants included N=`r info(exp1.avg)$n` 13-month-old infants (M=`r info(exp1.avg)$mean` months, range=`info(exp1.avg)$min`-`info(exp1.avg)$max`, `info(exp1.avg)$f` female). Seven infants were excluded and replaced due to fussiness (3 infants) or inattentiveness during test trials (4 infants). All data were collected at the Harvard Lab for Developmental Studies with procedures approved by the Committee on the Protection of Human Subjects. The methods, sample size, hypotheses, and analyses were pre-registered at https://osf.io/bs3e7/. We chose to study 13-month-old infants in Experiment 1 because younger infants were not available at the time the study began, and because 13-month-old infants have more experience with standing, walking, and falling: experiences that may be important for the development of these abilities (Kretch & Adolph, 2013). 
 
 ### Data Coding and Analysis Strategy.
-All experimenters and coders were naive to the nature and the order of the test events and were unable to see what the babies saw during the experiment (they relied on trial-neutral sound cues to start each trial). To check for exclusions and coding errors, all test trial data were re-coded in Datavyu and excluded as necessary: If an infant looked away from a test event without ever having seen the agent jump, or if the trial ended too early or late, that trial was marked and excluded from subsequent analysis (`r ntrials$missing[1]` out of `r ntrials$total[1]` total test trials). We used these offline coded looking times for our final analyses. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[1]/2` out of `r ntrials$total[1]` trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, ICC = `r exp1rel$value`, 95% CI [`r exp1rel$lbound`, `r exp1rel$ubound`].  All decisions to include or exclude trials or participants from our analysis were made by researchers who were blind to the events seen by infants.
+All experimenters and coders were naive to the nature and the order of the test events and were unable to see what the babies saw during the experiment (they relied on trial-neutral sound cues to start each trial). To check for exclusions and coding errors, all test trial data were re-coded in Datavyu and excluded as necessary: If an infant looked away from a test event without ever having seen the agent jump, or if the trial ended too early or late, that trial was marked and excluded from subsequent analysis (`r ntrials$missing[1]` out of `r ntrials$total[1]` total test trials). We used these offline coded looking times for our final analyses. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[1]/2` out of `r ntrials$total[1]` trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp1rel,3)`.  All decisions to include or exclude trials or participants from our analysis were made by researchers who were blind to the events seen by infants.
 
 Infant looking times are often log-normally distributed (Csibra, Hernik, Mascaro, Tatone, & Lengyel, 2016), including in this dataset (log-likelihood of data for Experiments 1-3 under normal distribution = `r normal.ll`, under lognormal distribution = `r lognormal.ll`), so our pre-registered dependent measure was the average looking time towards the higher- or lower-danger choice at test in log seconds, and the values of unstandardized B coefficients and 95% confidence intervals are reported in this unit. Nevertheless, we include summary statistics and plots of untransformed looking times for interpretability. We analyzed all looking times using mixed effects models (Bates, Mächler, Bolker, & Walker, 2015) implemented in R. All analyses including repeated measures included a random intercept for participant identity. Analyses conducted over multiple experiments included a random intercept for experiment, except in one case where including this intercept lead to issues with convergence. For every model, we checked for influential participants using Cook’s Distance (Nieuwenhuis, te Grotenhuis, & Pelzer, 2012) and excluded any participants who exceeded the standard 4/n threshold, where n is the number of participants. The number of participants that met this criterion is listed in every model result. 
 
@@ -721,10 +729,10 @@ exp2.luts.results2 <- cbind(exp2.luts.2.table, exp2.luts.2.betas,exp2.luts.2.ci)
 
 ## Methods
 ### Participants
-Our final sample of participants included N=`r info(exp2.avg)$n` 10-month-old infants (M=`r info(exp2.avg)$mean` months, range=`info(exp2.avg)$min`-`info(exp2.avg)$max`, `info(exp2.avg)$f` female). We chose the sample size of this experiment based on a power analysis over the results from Experiment 1. An additional 6 infants participated but were excluded from and replaced in the final sample due to fussiness (2 infants), inattentiveness during test trials (1 infants), online coding error (2 infants), and interference from caregivers (1 infant). The design, sample size, hypotheses, and analyses of this experiment were pre-registered and open access at https://osf.io/uh8ns/.
+Our final sample of participants included N=`r info(exp2.avg)$n` 10-month-old infants (M=`r info(exp2.avg)$mean` months, range=`r info(exp2.avg)$min`-`r info(exp2.avg)$max`, `r info(exp2.avg)$f` female). We chose the sample size of this experiment based on a power analysis over the results from Experiment 1. An additional 6 infants participated but were excluded from and replaced in the final sample due to fussiness (2 infants), inattentiveness during test trials (1 infants), online coding error (2 infants), and interference from caregivers (1 infant). The design, sample size, hypotheses, and analyses of this experiment were pre-registered and open access at https://osf.io/uh8ns/.
 
 ### Materials, Procedure, Data Coding, Analysis.
-The materials, procedures, coding, and analyses of Experiment 2 were identical to those of Experiment 1. Eight out of `r ntrials$total[2]` test trials were marked and excluded from further analysis because of inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[2]/2` test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, ICC = `r exp2rel$value`, 95% CI [`r exp2rel$lbound`, `r exp2rel$ubound`]
+The materials, procedures, coding, and analyses of Experiment 2 were identical to those of Experiment 1. Eight out of `r ntrials$total[2]` test trials were marked and excluded from further analysis because of inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[2]/2` test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r  reporticc(exp2rel,3)`.
 
 ## Results
 ### Pre-registered results.
@@ -1072,14 +1080,14 @@ exp3.results <- cbind(exp3.0.table, exp3.0.betas, exp3.0.ci)
 Our final sample of participants included N=`r exp3a.info$n` 10-month-old infants (M=`r exp3a.info$mean` months, range=`r exp3a.info$min`-`r exp3a.info$max`, `r exp3a.info$f` female) and N=`r exp3b.info$n` 13-month-old infants (M=`r exp3b.info$mean` months, range=`r exp3b.info$min`-`r exp3b.info$max`, `r exp3b.info$f` female). We chose this sample size using a power analysis from a pilot study (effect size ß=0.323), as well as estimates of effect sizes of studies with similar displays and design (Liu & Spelke, 2017; Liu et al., 2017). Eight infants were excluded and replaced in the final sample due to fussiness (3 infants), inattentiveness during test trials (3 infants), or interference from caregivers (2 infants). The methods, sample size, hypotheses, and analyses of this experiment were pre-registered and open access at https://osf.io/kx928/.
 
 ### Data Coding and Analysis
-The data coding and analysis strategy for Experiment 3 were identical to those of Experiments 1 and 2. Thirty-eight out of `r ntrials$total[3]` total trials (4 test trials and 2 control trials per participant) were excluded from the analysis based on inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`ntrials$total[3]/2` of `ntrials$total[3]` total test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, ICC = `r exp3rel$value`, 95% CI [`r exp3rel$lbound`, `r exp3rel$ubound`].
+The data coding and analysis strategy for Experiment 3 were identical to those of Experiments 1 and 2. Thirty-eight out of `r ntrials$total[3]` total trials (4 test trials and 2 control trials per participant) were excluded from the analysis based on inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[3]/2` of `r ntrials$total[3]` total test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp3rel,3)`.
 
 ## Results
 ### Pre-registered results
 Across both age groups, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeeper=`r summary.1013$look[3]`s, Mshallower=`r summary.1013$look[4]`s, `r report(exp3.results0,2,3,1)`, excluding one influential participant). See Figure 5.
 
 ### Comparing test events to control events
-To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants showed a preference for the shallower trench in this context (Mdeeper=`summary.pre.1013$look[2]`s, Mshallower=`summary.pre.1013$look[1]`s, `r report(exp3.results2,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3,4,3,2)`). Thus, infants’ expectations at test cannot be due to an intrinsic preference for events occurring over deeper to those over shallower trenches.
+To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants showed a preference for the shallower trench in this context (Mdeeper=`r summary.pre.1013$look[2]`s, Mshallower=`r summary.pre.1013$look[1]`s, `r report(exp3.results2,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3,4,3,2)`). Thus, infants’ expectations at test cannot be due to an intrinsic preference for events occurring over deeper to those over shallower trenches.
 
 ### Exploring age differences
 #### Results in 13-month-old infants
@@ -1088,7 +1096,7 @@ Thirteen-month-old infants looked longer at test when the agent, at test, chose 
 
 #### Results in 10-month-old infants
 
-Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results2,3,1,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
+Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results2,2,1,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
 
 #### Comparing 10-month-old and 13-month-old infants
 
@@ -1096,7 +1104,7 @@ The two groups of infants did not differ in their looking preferences between th
 
 # Supplemental Online Materials
 
-```{r logplot}
+```{r logplot, echo=TRUE}
 # is a lognormal transformation justified given the distribution of looks?
 fig.S1 <- ggplot(data = risk.avg, aes(look, fill=exp))
 fig.S1 +
