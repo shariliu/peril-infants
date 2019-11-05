@@ -9,7 +9,7 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(comment = "##", echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, include=FALSE, dependson="risk.wide")
+knitr::opts_chunk$set(comment = "##", echo=FALSE, warning=FALSE, message=FALSE, cache=TRUE, include=FALSE, dependson="wide")
 options(scipen = 0, digits = 2)
 
 ## load required packages
@@ -1124,14 +1124,6 @@ sim <- powerCurve(extend(exp1.1, along="subj", n=500),
 plot(sim)
 print(sim)
 
-```
-
-## Power analysis over experiment 3
-```{r sim, eval=FALSE}
-sim <- powerCurve(extend(exp3b.1, along="subj", n=500),
-                       along="subj", breaks = c(24, 28, 32, 36, 40, 44, 48, 52), alpha = .05, seed = 123)
-plot(sim)
-print(sim)
 ```
 
 ## Generate Data for Reliability
