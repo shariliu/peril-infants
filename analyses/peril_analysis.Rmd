@@ -31,7 +31,7 @@ ipak(packages)
 ```{r prep.data}
 
 # read in data
-wide <- read.csv(file = "risk_data.csv", header = TRUE)
+wide <- read.csv(file = "peril_data_deid.csv", header = TRUE)
 head(wide)
 str(wide)
 
@@ -386,7 +386,7 @@ ntrials <- full_join(nexclude, totaltrials)
 ## Reliability + Distribution Info
 ```{r reliability}
 
-rel <- read.csv(file = "risk_reliability.csv", header=TRUE)
+rel <- read.csv(file = "peril_reliability_deid.csv", header=TRUE)
 exp1 <- rel %>% filter(experiment.new=="Exp.1")
 exp2 <- rel %>% filter(experiment.new=="Exp.2")
 exp3 <- rel %>% filter(experiment.new=="Exp.3")
