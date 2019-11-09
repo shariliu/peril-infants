@@ -453,6 +453,9 @@ plot_grid(risk1, risk2, labels = c("A", "B"), nrow=1, rel_widths=c(2,1.2))
 **Figure 3.** Looking time towards the test events presenting approaches to the goals attained through actions of higher vs. lower peril in Experiments 1-2, both (A) within and (B) collapsed across experiments.  Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data.  Beta coefficients (ß) indicate effect sizes in standard deviations.
 
 ```{r fig.exp3, include=TRUE, fig.width=16, fig.height=16}
+risk.avg$type <- relevel(risk.avg$type, ref = "Higher")
+mr.pre$type <- relevel(mr.pre$type, ref = "Prefam High")
+
 mr1 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill = type)) +
   geom_boxplot(outlier.colour = NA, alpha = 0.8)+
   stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
@@ -464,7 +467,7 @@ mr1 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   facet_grid(~exp+agegroup)+
   geom_errorbar(data = summary.avg %>% filter(exp == "Exp.3"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
-  scale_x_discrete(labels = c("Less Perilous\n(Shallower Trench)","More Perilous\n(Deeper Trench)"))+
+  scale_x_discrete(labels = c("More Perilous\n(Deeper Trench)", "Less Perilous\n(Shallower Trench)"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.386", "*ß=0.356")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -483,7 +486,7 @@ mr2 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   # facet_grid(~agegroup)+
   geom_errorbar(data = summary.1013 %>% filter(task=="min.risk"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
-  scale_x_discrete(labels = c("Less Perilous\n(Shallower Trench)","More Perilous\n(Deeper Trench)"))+
+  scale_x_discrete(labels = c("More Perilous\n(Deeper Trench)", "Less Perilous\n(Shallower Trench)"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("***ß=0.410")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -502,7 +505,7 @@ mr3 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   facet_grid(~exp+agegroup)+
   # stat_summary(fun.data = mean_cl_normal, geom = "errorbar", colour="red", position = position_dodge(width = 5), width = 0) +
   geom_errorbar(data = summary.pre, colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci), alpha = 0.8) +
-  scale_x_discrete(labels = c("Shallower Trench", "Deeper Trench"))+
+  scale_x_discrete(labels = c("Deeper Trench", "Shallower Trench"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("ß=-0.109", "**ß=-0.339")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
@@ -521,7 +524,7 @@ mr4 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   # facet_grid(~exp)+
   # stat_summary(fun.data = mean_cl_normal, geom = "errorbar", colour="red", position = position_dodge(width = 5), width = 0) +
   geom_errorbar(data = summary.pre.1013, colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci), alpha = 0.8) +
-  scale_x_discrete(labels = c("Shallower Trench","Deeper Trench"))+
+  scale_x_discrete(labels = c("Deeper Trench", "Shallower Trench"))+
   annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=-0.277")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
