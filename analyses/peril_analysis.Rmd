@@ -407,9 +407,11 @@ lognormal.ll <- fitdistr(risk.avg$look, "lognormal")$loglik
 # Figures
 
 ```{r fig.exp12, include=TRUE, fig.width=16}
+
+theme_set(theme_cowplot(font_size=20))
+
 risk.avg$type<- relevel(risk.avg$type, "Higher")
 risk1 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, look, fill = type))+
-    facet_grid(~exp+agegroup)+
   geom_boxplot(outlier.colour = NA, alpha = 0.8)+
   stat_summary(fun.y = mean, alpha = 0.8, geom = "point", shape=21, size=3, position = "dodge", colour = "red", fill = "red") +
   ylab("Looking Time (s)") +
@@ -420,10 +422,11 @@ risk1 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, loo
   geom_point(alpha = 0.1)+
   geom_line(alpha = 0.2, aes(group = subj))+
   scale_x_discrete(labels = c("Higher Peril Goal\n(Higher Value)", "Lower Peril Goal\n(Lower Value)"))+
-  # theme_linedraw(15)+
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.354", "ß=0.168")) +
+  facet_grid(~exp+agegroup)+
+# theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.354", "ß=0.168")) +
   scale_colour_brewer(palette="Greys")+
   background_grid(major = "xy", minor = "xy")
 
@@ -440,7 +443,7 @@ risk2 <- ggplot(data = risk.avg %>% filter(task == "infer.value"), aes(type, loo
   geom_errorbar(data = summary.1013 %>% filter(task=="infer.value"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
   scale_x_discrete(labels = c("Higher Peril Goal\n(Higher Value)", "Lower Peril Goal\n(Lower Value)"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.265")) +
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.265")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
@@ -468,7 +471,7 @@ mr1 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   geom_errorbar(data = summary.avg %>% filter(exp == "Exp.3"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
   scale_x_discrete(labels = c("More Perilous\n(Deeper Trench)", "Less Perilous\n(Shallower Trench)"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.386", "*ß=0.356")) +
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=0.386", "*ß=0.356")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
@@ -487,7 +490,7 @@ mr2 <- ggplot(data = risk.avg %>% filter(exp == "Exp.3"), aes(type, look, fill =
   geom_errorbar(data = summary.1013 %>% filter(task=="min.risk"), colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci)) +
   # geom_point(data = summary.avg, aes(type, look))+
   scale_x_discrete(labels = c("More Perilous\n(Deeper Trench)", "Less Perilous\n(Shallower Trench)"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("***ß=0.410")) +
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("***ß=0.410")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
@@ -506,7 +509,7 @@ mr3 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   # stat_summary(fun.data = mean_cl_normal, geom = "errorbar", colour="red", position = position_dodge(width = 5), width = 0) +
   geom_errorbar(data = summary.pre, colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci), alpha = 0.8) +
   scale_x_discrete(labels = c("Deeper Trench", "Shallower Trench"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("ß=-0.109", "**ß=-0.339")) +
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("ß=-0.109", "**ß=-0.339")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
@@ -525,7 +528,7 @@ mr4 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   # stat_summary(fun.data = mean_cl_normal, geom = "errorbar", colour="red", position = position_dodge(width = 5), width = 0) +
   geom_errorbar(data = summary.pre.1013, colour="red", position = position_dodge(width = 5), width = 0, aes(ymin=look-ci, ymax=look+ci), alpha = 0.8) +
   scale_x_discrete(labels = c("Deeper Trench", "Shallower Trench"))+
-  annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=-0.277")) +
+  # annotate("text", colour="red", x=1.5, y=63, size=5, label=c("*ß=-0.277")) +
   # theme_linedraw(15)+
   theme(legend.position="none")+
   scale_fill_brewer(palette="Greys")+
@@ -533,6 +536,9 @@ mr4 <- ggplot(data = mr.pre, aes(type, look, fill = type))+
   background_grid(major = "xy", minor = "xy")
 
 plot_grid(mr1, mr2, mr3, mr4, labels = c("A", "B", "C", "D"), rel_widths = c(1.8,1,1.8,1))
+
+# plot_grid(mr1, mr2, mr3, mr4, labels = c("C", "D", "E", "F"), rel_widths = c(1.8,1,1.8,1))
+
 
 ```
 
@@ -1099,7 +1105,7 @@ Thirteen-month-old infants looked longer at test when the agent, at test, chose 
 
 #### Results in 10-month-old infants
 
-Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results2,2,3,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
+Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3a.results,2,3,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
 
 #### Comparing 10-month-old and 13-month-old infants
 
@@ -1127,6 +1133,22 @@ sim <- powerCurve(extend(exp1.1, along="subj", n=500),
 plot(sim)
 print(sim)
 
+```
+
+## Power analysis over experiment 3
+```{r exp3.power, eval=FALSE}
+sim2 <- powerCurve(extend(exp3.1, along="subj", n=500),
+                       along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
+plot(sim2)
+print(sim2)
+
+```
+
+```{r exp3.power.10mo, eval=FALSE}
+sim3 <- powerCurve(extend(exp3b.1, along="subj", n=500),
+                       along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
+plot(sim3)
+print(sim3)
 ```
 
 ## Generate Data for Reliability
