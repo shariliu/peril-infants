@@ -563,13 +563,13 @@ plot(influence(exp1.1, "subj"), which="cook",
      ylab="Subject ID")
 
 exp1.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp1.avg %>% filter(subj != "S4_13"))
+               data = exp1.avg %>% filter(subj != "S4_12"))
 
 exp1.1.table <- gen.m(exp1.1.cooks)
 exp1.1.ci <- gen.ci(exp1.1.cooks)[3:4,]
 
 exp1.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp1.avg %>% filter(subj != "S4_13"))
+               data = exp1.avg %>% filter(subj != "S4_12"))
 exp1.1.betas <- gen.beta(exp1.1.beta)
 
 exp1.results <- cbind(exp1.1.table, exp1.1.betas,exp1.1.ci)
@@ -1125,6 +1125,161 @@ fig.S1 +
 ```
 
 **Figure S1.** Density plot of looking times during test for Experiments 1 and 2 (total N=`r length(unique(risk.avg$subj))`). Maximum-likelihood fitting revealed that the lognormal distribution (log likelihood=`r lognormal.ll`) provides a better fit to these data than the normal distribution (log likelihood=`r normal.ll`).
+
+```{r famplot}
+fam <- wide %>%
+  filter(cost=="Risk")%>%
+  gather(famtrial, look, fam1:fam6) %>%
+  mutate(agegroup = as.factor(case_when(agem < 12 ~ "10 months",
+                            agem > 12 ~ "13 months"))) %>%
+  mutate(famn = str_remove(famtrial, "fam"))
+
+fam$famtrial <- as.factor(fam$famtrial)
+fam$famn <- as.factor(fam$famn)
+
+famplot <- ggplot(data = fam, aes(famn, look))
+famplot + geom_boxplot() +
+  facet_wrap(~exp+agegroup, nrow=1)+
+  xlab("Familiarization Trial")+
+  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.1)+
+    stat_summary(fun.y=mean,geom="point",shape=5)+
+  ylab("Looking time (s)")
+```
+
+**Figure S2.** Plot of looking times during familiarization across Experiments 1-3 (total N=`r length(unique(risk.avg$subj))`). 
+
+## Including versus excluding influential observations. 
+
+Below, we report the results from all of our pre-registered analyses including all observations, rather than excluding influential observations.
+
+```{r includingall.exp1}
+exp1.everyone.table <- gen.m(exp1.1)
+exp1.everyone.ci <- gen.ci(exp1.1)[3:4,]
+
+exp1.everyone.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp1.avg)
+exp1.everyone.betas <- gen.beta(exp1.everyone.beta)
+
+exp1.everyone.results <- cbind(exp1.everyone.betas,exp1.everyone.table,exp1.everyone.ci)
+```
+
+```{r includingall.exp2}
+exp2.everyone.table <- gen.m(exp2.1)
+exp2.everyone.ci <- gen.ci(exp2.1)[3:4,]
+
+exp2.everyone.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp2.avg)
+exp2.everyone.betas <- gen.beta(exp2.everyone.beta)
+
+exp2.everyone.results <- cbind(exp2.everyone.betas,exp2.everyone.table,exp2.everyone.ci)
+```
+
+```{r includingall.exp3.1013}
+exp3.everyone.1013.test.table <- gen.m(exp3.1)
+exp3.everyone.1013.test.ci <- gen.ci(exp3.1)[3:4,]
+
+exp3.everyone.1013.test.beta <- lmer(scale(loglook)~ type + (1 | subj),
+                                     data=exp3.avg)
+exp3.everyone.1013.test.betas <- gen.beta(exp3.everyone.1013.test.beta)
+
+exp3.everyone.1013.test.results <- cbind(exp3.everyone.1013.test.betas,exp3.everyone.1013.test.table,exp3.everyone.1013.test.ci)
+
+exp3.everyone.1013.pre.table <- gen.m(exp3.2)
+exp3.everyone.1013.pre.ci <- gen.ci(exp3.2)[3:4,]
+
+exp3.everyone.1013.pre.beta <- lmer(scale(loglook) ~ type + (1 | subj),
+                                     data=exp3.pre)
+exp3.everyone.1013.pre.betas <- gen.beta(exp3.everyone.1013.pre.beta)
+
+exp3.everyone.1013.pre.results <- cbind(exp3.everyone.1013.pre.betas,exp3.everyone.1013.pre.table,exp3.everyone.1013.pre.ci)
+
+exp3.everyone.1013.prevstest.table <- gen.m(exp3.3)
+exp3.everyone.1013.prevstest.ci <- gen.ci(exp3.3)[3:6,]
+
+exp3.everyone.1013.prevstest.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj), data = exp3.prefam.test)
+
+exp3.everyone.1013.prevstest.betas <- gen.beta(exp3.everyone.1013.prevstest.beta)
+
+exp3.everyone.1013.prevstest.results <- cbind(exp3.everyone.1013.prevstest.betas,exp3.everyone.1013.prevstest.table,exp3.everyone.1013.prevstest.ci)
+```
+
+```{r includingall.exp3.10}
+exp3.everyone.10.test.table <- gen.m(exp3a.1)
+exp3.everyone.10.test.ci <- gen.ci(exp3a.1)[3:4,]
+
+exp3.everyone.10.test.beta <- lmer(scale(loglook)~ type + (1 | subj),
+                                     data=exp3a.avg)
+exp3.everyone.10.test.betas <- gen.beta(exp3.everyone.10.test.beta)
+
+exp3.everyone.10.test.results <- cbind(exp3.everyone.10.test.betas,exp3.everyone.10.test.table,exp3.everyone.10.test.ci)
+
+exp3.everyone.10.pre.table <- gen.m(exp3a.2)
+exp3.everyone.10.pre.ci <- gen.ci(exp3a.2)[3:4,]
+
+exp3.everyone.10.pre.beta <- lmer(scale(loglook) ~ type + (1 | subj),
+                                     data=exp3a.pre)
+exp3.everyone.10.pre.betas <- gen.beta(exp3.everyone.10.pre.beta)
+
+exp3.everyone.10.pre.results <- cbind(exp3.everyone.10.pre.betas,exp3.everyone.10.pre.table,exp3.everyone.10.pre.ci)
+
+exp3.everyone.10.prevstest.table <- gen.m(exp3a.3)
+exp3.everyone.10.prevstest.ci <- gen.ci(exp3a.3)[3:6,]
+
+exp3.everyone.10.prevstest.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj), data = exp3a.prefam.test)
+
+exp3.everyone.10.prevstest.betas <- gen.beta(exp3.everyone.10.prevstest.beta)
+
+exp3.everyone.10.prevstest.results <- cbind(exp3.everyone.10.prevstest.betas,exp3.everyone.10.prevstest.table,exp3.everyone.10.prevstest.ci)
+```
+
+```{r includingall.exp3.13}
+
+exp3.everyone.13.test.table <- gen.m(exp3b.1)
+exp3.everyone.13.test.ci <- gen.ci(exp3b.1)[3:4,]
+
+exp3.everyone.13.test.beta <- lmer(scale(loglook)~ type + (1 | subj),
+                                     data=exp3b.avg)
+exp3.everyone.13.test.betas <- gen.beta(exp3.everyone.13.test.beta)
+
+exp3.everyone.13.test.results <- cbind(exp3.everyone.13.test.betas,exp3.everyone.13.test.table,exp3.everyone.13.test.ci)
+
+exp3.everyone.13.pre.table <- gen.m(exp3b.2)
+exp3.everyone.13.pre.ci <- gen.ci(exp3b.2)[3:4,]
+
+exp3.everyone.13.pre.beta <- lmer(scale(loglook) ~ type + (1 | subj),
+                                     data=exp3b.pre)
+exp3.everyone.13.pre.betas <- gen.beta(exp3.everyone.13.pre.beta)
+
+exp3.everyone.13.pre.results <- cbind(exp3.everyone.13.pre.betas,exp3.everyone.13.pre.table,exp3.everyone.13.pre.ci)
+
+exp3.everyone.13.prevstest.table <- gen.m(exp3b.3)
+exp3.everyone.13.prevstest.ci <- gen.ci(exp3b.3)[3:6,]
+
+exp3.everyone.13.prevstest.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj), data = exp3b.prefam.test)
+
+exp3.everyone.13.prevstest.betas <- gen.beta(exp3.everyone.13.prevstest.beta)
+
+exp3.everyone.13.prevstest.results <- cbind(exp3.everyone.13.prevstest.betas,exp3.everyone.13.prevstest.table,exp3.everyone.13.prevstest.ci)
+```
+
+### Experiment 1
+Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action (Mlower=`r summary.avg$look[2]`s, Mhigher=`r summary.avg$look[1]`s, 95% confidence interval (CI) over difference in log seconds `r report(exp1.everyone.results,2,3,2)`). This looking preference is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action and looked longer when this expected outcome did not occur. 
+
+### Experiment 2
+Ten-month-old infants did not show a statistically significant looking preference between the test events, (Mlower=`r summary.avg$look[4]`s, Mhigher=`r summary.avg$look[3]`s, `r report(exp2.everyone.results,2,3,1)`, mixed effect model with fixed effect of test event and random intercept for participant identity).
+
+### Experiment 3
+#### Collapsing across age groups
+Across both age groups, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeeper=`r summary.1013$look[3]`s, Mshallower=`r summary.1013$look[4]`s, `r report(exp3.everyone.1013.test.results,2,3,1)`).
+
+During the control events, infants showed a preference for the shallower trench in this context (Mdeeper=`r summary.pre.1013$look[1]`s, Mshallower=`r summary.pre.1013$look[2]`s, `r report(exp3.everyone.1013.pre.results,2,3,2)`). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.everyone.1013.prevstest.results,4,3,2)`). Thus, infants’ expectations at test cannot be due to an intrinsic preference for events occurring over deeper to those over shallower trenches.
+
+#### 13-month-olds
+Thirteen-month-old infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (Mdeep=`r summary.avg$look[7]`s, Mshallow=`r summary.avg$look[8]`s, `r report(exp3.everyone.13.test.results, 2, 3, 1)`, excluding one influential participant. During control events, 13-month-old infants preferred to look at the shallow trench (Mdeep=`r summary.pre$look[3]`s, Mshallow=`r summary.pre$look[3]`s, `r report(exp3.everyone.13.pre.results,2,3,2)`). Their looking preferences significantly differed across the two conditions, `r report(exp3.everyone.13.prevstest.results,4,3,2)`).
+
+#### 10-month-olds
+Ten-month-old looked marginally at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3.everyone.10.test.results,2,3,1)`). During control events, 10-month-old infants displayed looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3.everyone.10.pre.results,2,3,2)`). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3.everyone.10.prevstest.results,4,3,2)`.
+
 
 ## Power analysis over experiment 1
 ```{r exp1.power, eval=FALSE}
