@@ -1,7 +1,7 @@
 ---
 title: "Dangerous ground: Thirteen-month-old infants are sensitive to peril in other people’s actions "
 author: "Shari Liu"
-date: "April 19 2019"
+date: "April 27 2020"
 output:
   html_document: default
 editor_options: 
@@ -1113,7 +1113,7 @@ The two groups of infants did not differ in their looking preferences between th
 
 # Supplemental Online Materials
 
-```{r logplot, echo=TRUE}
+```{r logplot, echo=FALSE}
 # is a lognormal transformation justified given the distribution of looks?
 fig.S1 <- ggplot(data = risk.avg, aes(look, fill=exp))
 fig.S1 +
@@ -1126,21 +1126,23 @@ fig.S1 +
 
 **Figure S1.** Density plot of looking times during test for Experiments 1 and 2 (total N=`r length(unique(risk.avg$subj))`). Maximum-likelihood fitting revealed that the lognormal distribution (log likelihood=`r lognormal.ll`) provides a better fit to these data than the normal distribution (log likelihood=`r normal.ll`).
 
-```{r famplot}
+```{r famplot, echo=FALSE}
 fam <- wide %>%
   filter(cost=="Risk")%>%
-  gather(famtrial, look, fam1:fam6) %>%
+  gather(trial, look, fam1:test4) %>%
   mutate(agegroup = as.factor(case_when(agem < 12 ~ "10 months",
                             agem > 12 ~ "13 months"))) %>%
-  mutate(famn = str_remove(famtrial, "fam"))
+  mutate(trial_n = parse_number(trial)) %>%
+  mutate(trial_type = str_extract(trial, "[a-z]+"))
 
-fam$famtrial <- as.factor(fam$famtrial)
-fam$famn <- as.factor(fam$famn)
+fam$trial_type <- as.factor(fam$trial_type)
+fam$trial_n <- as.factor(fam$trial_n)
+fam$look <- as.numeric(as.character(fam$look))
 
-famplot <- ggplot(data = fam, aes(famn, look))
+famplot <- ggplot(data = fam, aes(trial_n, look, fill=trial_type))
 famplot + geom_boxplot() +
-  facet_wrap(~exp+agegroup, nrow=1)+
-  xlab("Familiarization Trial")+
+  facet_wrap(~exp+agegroup+trial_type, nrow=2)+
+  xlab("Trial N")+
   stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.1)+
     stat_summary(fun.y=mean,geom="point",shape=5)+
   ylab("Looking time (s)")
@@ -1279,7 +1281,6 @@ Thirteen-month-old infants looked longer at test when the agent, at test, chose 
 
 #### 10-month-olds
 Ten-month-old looked marginally at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3.everyone.10.test.results,2,3,1)`). During control events, 10-month-old infants displayed looking preference (Mdeep=`r summary.pre$look[1]`s, Mshallow=`r summary.pre$look[2]`s, `r report(exp3.everyone.10.pre.results,2,3,2)`). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3.everyone.10.prevstest.results,4,3,2)`.
-
 
 ## Power analysis over experiment 1
 ```{r exp1.power, eval=FALSE}
