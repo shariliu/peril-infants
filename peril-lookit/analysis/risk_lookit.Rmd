@@ -236,19 +236,11 @@ risk.wide$lower2 <- as.numeric(as.character(risk.wide$lower2))
 
 # Describing curves of attention during hab and test
 ```{r habplots}
-habplot1 <- ggplot(data = risk.long, aes(as.factor(trial_n), look, fill=trial_type))
-habplot1 + geom_boxplot() +
-  stat_summary(fun.y=mean,geom="point",shape=5)+
-  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.1)+
-  facet_grid(experiment~trial_type)+
-  ylab("Looking Time (s)")+
-  xlab("Trial")
-
-ggplot(data = risk.long %>% filter(cost=="Risk"), aes(as.factor(trial_n), look, fill=trial_type)) + 
+habplot1 <- ggplot(data = risk.long, aes(as.factor(trial_n), look, fill=trial_type))+
   geom_boxplot() +
   stat_summary(fun.y=mean,geom="point",shape=5)+
   stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.1)+
-  facet_wrap(~trial_type)+
+  facet_grid(experiment~trial_type)+
   ylab("Looking Time (s)")+
   xlab("Trial")
 ```
@@ -262,7 +254,6 @@ habplot2 + geom_point() +
   geom_smooth(method = "lm")+
   ylab("<-- Pref for low jump ---- Pref for high jump -->")+
   xlab("Total Attention During Habituation (s)")
-
 ```
 
 ```{r}
@@ -284,20 +275,19 @@ habplot9 <- ggplot(data=risk.wide, aes(sum_fam, test1+test2+test3+test4))+
 ```
 
 ```{r}
-(habplot7 | habplot6) / (habplot8 | habplot9) + plot_annotation(tag_levels = 'A')
+(habplot1 | habplot8 | habplot9) + plot_annotation(tag_levels = 'A')
 
 ```
 
 # Relating hab data to preference on first test pair
 
 ```{r habplots3}
-
-habplot6 <- ggplot(data=risk.wide, aes(sum_fam, avg.higher-avg.lower))
-habplot6 + geom_point() +
-  facet_wrap(~experiment)+
+habplot6 <- ggplot(data=risk.wide, aes(sum_fam, higher1-lower1))+
+  geom_point() +
+  facet_wrap(~experiment, nrow=2)+
   geom_smooth(method = "lm")+
-  ylab("<-- Pref for expected ---- Pref for unexpected -->")+
-  xlab("Total Attention During Habituation (s)")
+  ylab("<-- Pref for higher value or peril ---- Pref for lower value or peril -->")+
+  xlab("Total Attention During Familiarization (s)")
 ```
 
 
