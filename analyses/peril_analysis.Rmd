@@ -938,6 +938,10 @@ exp3b.results3 <- cbind(exp3b.3.table,exp3b.3.betas,exp3b.3.ci)
 
 # Exp 3: Age groups together
 ```{r exp3.together}
+exp3.0 <- lmer(loglook ~ 1 + (1|subj),
+               data = exp3.avg)
+summary(exp3.0)
+
 exp3.1 <- lmer(loglook ~ type + (1|subj),
                data = exp3.avg)
 summary(exp3.1)
@@ -1307,6 +1311,16 @@ plot(sim3)
 print(sim3)
 ```
 
+```{r exp3.power.luts.exp2, eval=FALSE}
+luts.exp2 <- lmer(scale(loglook)~ type + (1 | subj),
+                                     data=avg)
+
+sim3 <- powerCurve(extend(exp3b.1, along="subj", n=500),
+                       along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
+plot(sim3)
+print(sim3)
+```
+
 ## Generate Data for Reliability
 ```{r generate.rel, eval=FALSE}
 reliability <- wide %>% filter(reliability ==1) %>%
@@ -1316,4 +1330,18 @@ reliability <- wide %>% filter(reliability ==1) %>%
   group_by(subj, trialn)
 # write.csv(reliability, "risk_rel.csv")
 ```
+
+# Bayes Factors
+```{r}
+library(bayestestR)
+
+## no effect vs effect
+bayesfactor_models(exp1.0, exp1.1, denominator = exp1.0) # Exp 1
+bayesfactor_models(exp2.0, exp2.1, denominator = exp2.0) # Exp 2
+bayesfactor_models(exp3a.0, exp3a.1, denominator = exp3a.0) # Exp 3 10mo
+bayesfactor_models(exp3b.0, exp3b.1, denominator = exp3b.0) # Exp 3 13mo
+bayesfactor_models(exp3.0, exp3.1, denominator = exp3.0) # Exp 3 13mo
+```
+
+
 
