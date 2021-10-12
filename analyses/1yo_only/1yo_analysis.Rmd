@@ -460,7 +460,7 @@ exp2.figure + exp3.figure + plot_annotation(tag_levels = 'A')
 **Figure 4.**  Looking times from Experiment during the test events, in which the agent chose to jump across a deeper or shallower trench for a goal (A and B), and during the control events, in which infants’ attention was drawn over the deeper and shallower trenches (C and D). The looking times are presented by separately (A and C) and collapsed across age groups (B and D). Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data. Beta coefficients (ß) list effect sizes in standard deviations.
 
 
-# Experiment 1: Inferring value from risk (13-month-old infants)
+# Experiment 1: Inferring value from risk
 
 ```{r exp1.primary}
 exp1.avg$type <- relevel(exp1.avg$type, ref = "higher")
@@ -507,9 +507,13 @@ Infant looking times are often log-normally distributed (Csibra, Hernik, Mascaro
 ### Pre-registered results.
 We compared infants’ looking times when the agent approached the target for which it performed the more dangerous action (Higher Value) to the looking times when the agent approached the other target (Lower Value). Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action (Mlower=`r summary.1013$look[2]`s (SE `r summary.1013$sd[2]`), Mhigher=`r summary.1013$look[1]`s (SE `r summary.1013$sd[1]`), 95% confidence interval (CI) over difference in log seconds `r report(exp1.results,2,3,2)` excluding one influential participant). This looking preference is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action and looked longer when this expected outcome did not occur. 
 
-# Experiment 2: Inferring value from risk (10-month-old infants)
-
+# Experiment 2: Minimizing Risk
 ```{r exp2.primary}
+
+exp2.avg <- exp2.avg %>% filter(phase=="testavg") 
+
+exp2.info <- info(exp2.avg)
+
 exp2.0 <- lmer(loglook ~ 1 + (1|subj),
                data = exp2.avg)
 
@@ -518,417 +522,82 @@ exp2.1 <- lmer(loglook ~ type + (1|subj),
 
 # id influential observations
 plot(influence(exp2.1, "subj"), which="cook",
-     cutoff=4/32, sort=TRUE,
+     cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
-# one influential observation, exclude
+# one influential observation
 
 exp2.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = filter(exp2.avg, subj != "S5_25"))
-
+               data = exp2.avg %>% filter(subj != "24-MR"))
 exp2.1.table <- gen.m(exp2.1.cooks)
 exp2.1.ci <- gen.ci(exp2.1.cooks)[3:4,]
 
 exp2.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = filter(exp2.avg, subj != "S5_25"))
+               data = exp2.avg %>% filter(subj != "24-MR"))
 exp2.1.betas <- gen.beta(exp2.1.beta)
 
-exp2.results <- cbind(exp2.1.table, exp2.1.betas,exp2.1.ci)
+exp2.results <- cbind(exp2.1.table, exp2.1.betas, exp2.1.ci)
 ```
 
-#### Experiments 1 and 2: Inferring value from risk (10 and 13-month-old infants)
+```{r exp2.pre}
+exp2.control <- exp2.avg %>% filter(phase=="control") 
 
-```{r exp12.diff}
-
-exp12.avg <- long.avg %>% 
-  filter(exp == "Exp.1" | exp == "Exp.2") %>% 
-  mutate(agegroup = as.factor(case_when(agem < 12 ~ "10 months",
-                            agem > 12 ~ "13 months")))
-
-exp12.avg$type <- relevel(exp12.avg$type, ref = "higher")
-
-exp12.1 <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp12.avg)
+exp2.2 <- lmer(loglook ~ type + (1|subj),
+               data = exp2.control)
 
 # id influential observations
-plot(influence(exp12.1, "subj"), which="cook",
-     cutoff=4/64, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation, exclude
-
-exp12.1.cooks <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp12.avg %>% filter(subj != "S5_25"))
-
-exp12.1.table <- gen.m(exp12.1.cooks)
-exp12.1.ci <- gen.ci(exp12.1.cooks)[3:4,]
-
-exp12.1.beta <- lmer(scale(loglook) ~ type * agegroup  + (1|subj),
-               data = exp12.avg %>% filter(subj != "S5_25"))
-exp12.1.betas <- gen.beta(exp12.1.beta)
-
-exp12.results <- cbind(exp12.1.table, exp12.1.betas,exp12.1.ci)
-```
-
-```{r exp12.collapsing}
-
-exp12.2 <- lmer(loglook ~ type + (1|subj) + (1|exp),
-               data = exp12.avg)
-
-# id influential observations
-plot(influence(exp12.2, "subj"), which="cook",
-     cutoff=4/64, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation, exclude
-
-exp12.2.cooks <- lmer(loglook ~ type + (1|subj) + (1|exp),
-               data = exp12.avg %>% filter(subj != "S5_25"))
-
-exp12.2.table <- gen.m(exp12.2.cooks)
-exp12.2.ci <- gen.ci(exp12.2.cooks)[4:5,]
-
-exp12.2.beta <- lmer(scale(loglook) ~ type  + (1|subj) + (1|exp),
-               data = exp12.avg %>% filter(subj != "S5_25"))
-exp12.2.betas <- gen.beta(exp12.2.beta)
-
-exp12.results2 <- cbind(exp12.2.table, exp12.2.betas,exp12.2.ci)
-```
-
-#### Comparing Exp 2 and LUTS Exp 3
-```{r exp2.luts.diff}
-
-exp2.luts.avg <- long.avg %>% 
-  filter(experiment == "RISK10" | experiment == "LUTS.Exp.3") %>%
-  filter(phase == "testavg")
-
-exp2.luts.avg$type <- relevel(exp2.luts.avg$type, ref = "higher")
-
-#### IMPT: Model fails to converge if experiment is also added as random intercept
-
-exp2.luts.1 <- lmer(loglook ~ type * experiment + (1|subj),
-               data = exp2.luts.avg)
-
-# id influential observations
-plot(influence(exp2.luts.1, "subj"), which="cook",
-     cutoff=4/64, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation, exclude
-
-exp2.luts.1.cooks <- lmer(loglook ~ type * experiment  + (1|subj),
-               data = exp2.luts.avg %>% filter(subj != "S3_15"))
-
-exp2.luts.1.table <- gen.m(exp2.luts.1.cooks)
-exp2.luts.1.ci <- gen.ci(exp2.luts.1.cooks)[3:4,]
-
-exp2.luts.1.beta <- lmer(scale(loglook) ~ type * experiment  + (1|subj),
-               data = exp2.luts.avg %>% filter(subj != "S3_15"))
-exp2.luts.1.betas <- gen.beta(exp2.luts.1.beta)
-
-exp2.luts.results <- cbind(exp2.luts.1.table, exp2.luts.1.betas,exp2.luts.1.ci)
-```
-
-```{r exp2.luts.collapsing}
-
-#### IMPT: Model fails to converge if experiment is also added as random intercept
-exp2.luts.2 <- lmer(loglook ~ type + (1|subj),
-               data = exp2.luts.avg)
-
-# id influential observations
-plot(influence(exp2.luts.2, "subj"), which="cook",
-     cutoff=4/64, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation, exclude
-
-exp2.luts.2.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp2.luts.avg %>% filter(subj != "S5_25"))
-
-exp2.luts.2.table <- gen.m(exp2.luts.2.cooks)
-exp2.luts.2.ci <- gen.ci(exp2.luts.2.cooks)[3:4,]
-
-exp2.luts.2.beta <- lmer(scale(loglook) ~ type+ (1|subj),
-               data = exp2.luts.avg %>% filter(subj != "S5_25"))
-exp2.luts.2.betas <- gen.beta(exp2.luts.2.beta)
-
-exp2.luts.results2 <- cbind(exp2.luts.2.table, exp2.luts.2.betas,exp2.luts.2.ci)
-```
-
-## Methods
-### Participants
-Our final sample of participants included N=`r info(exp2.avg)$n` 10-month-old infants (M=`r info(exp2.avg)$mean` months, range=`r info(exp2.avg)$min`-`r info(exp2.avg)$max`, `r info(exp2.avg)$f` female). We chose the sample size of this experiment based on a power analysis over the results from Experiment 1. An additional 6 infants participated but were excluded from and replaced in the final sample due to fussiness (2 infants), inattentiveness during test trials (1 infants), online coding error (2 infants), and interference from caregivers (1 infant). The design, sample size, hypotheses, and analyses of this experiment were pre-registered and open access at https://osf.io/uh8ns/.
-
-### Materials, Procedure, Data Coding, Analysis.
-The materials, procedures, coding, and analyses of Experiment 2 were identical to those of Experiment 1. Fourteen out of `r ntrials$total[2]` test trials were marked and excluded from further analysis because of inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[2]/2` test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r  reporticc(exp2rel,3)`.
-
-## Results
-### Pre-registered results.
-Ten-month-old infants did not show a statistically significant looking preference between the test events, (Mlower=`r summary.1013$look[4]`s (SD=`r summary.1013$sd[4]`), Mhigher=`r summary.1013$look[3]`s (SD=`r summary.1013$sd[3]`),`r report(exp2.results,2,3,1)`, mixed effect model with fixed effect of test event and random intercept for participant identity, excluding one influential participant based on Cook’s Distance using the same criterium as Experiment 1). See Figure 3.
-
-### Exploratory results.
-#### Comparing 10-month-old infants’ responses to danger and physical effort.
-To test whether 10-month-old infants responded differently to jumps over trenches of varying depth (i.e. danger), than to jumps over trenches of varying width (i.e. physical effort), we compared their looking preferences in Experiment 2 to those in Experiment 3 of Liu et al. (2017). There was no difference in infants’ reasoning about physical effort and danger across these two studies (`r report(exp2.luts.results,4,3,2)`, excluding one influential participant). Collapsing across both experiments, 10-month-old infants looked longer when the agent chose the goal for which it previously performed actions that were less dangerous (current experiment) or less costly (Experiment 3, Liu et al., 2017) (`r report(exp2.luts.results2,2,3,1)`, excluding one influential participant).
-
-#### Comparing Experiments 1 and 2.
-To test whether 10- and 13-month-old infants performed differently, we compared the data from Experiments 1 and 2. Ten- and 13-month-old infants did not significantly differ in their looking preferences, `r report(exp12.results,4,3,2)`. Pooling results from Experiments 1 and 2, infants looked longer overall when the agent chose the goal that was achieved by the less dangerous action (Mlower=`r summary.exp12$look[2]`s (SD=`r summary.exp12$sd[2]`), Mhigher=`r summary.exp12$look[1]`s (SD=`r summary.exp12$sd[1]`), `r report(exp12.results2, 2, 3, 1)`, excluding one influential participant).
-
-# Experiment 3: Minimizing Risk (10mo infants)
-```{r exp3a.primary}
-
-exp3a.avg <- exp3.avg %>% filter(agegroup=="10 months" & phase=="testavg") 
-
-exp3a.info <- info(exp3a.avg)
-
-
-exp3a.0 <- lmer(loglook ~ 1 + (1|subj),
-               data = exp3a.avg)
-
-exp3a.1 <- lmer(loglook ~ type + (1|subj),
-               data = exp3a.avg)
-
-# id influential observations
-plot(influence(exp3a.1, "subj"), which="cook",
+plot(influence(exp2.2, "subj"), which="cook",
      cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
-# one influential observation
+# two influential observation
 
-exp3a.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3a.avg %>% filter(subj != "03-MR"))
-exp3a.1.table <- gen.m(exp3a.1.cooks)
-exp3a.1.ci <- gen.ci(exp3a.1.cooks)[3:4,]
+exp2.cooks <- lmer(loglook ~ type + (1|subj),
+               data = exp2.control %>% filter(subj != "59-MR" & subj != "54-MR"))
 
-exp3a.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3a.avg %>% filter(subj != "03-MR"))
-exp3a.1.betas <- gen.beta(exp3a.1.beta)
+exp2.table <- gen.m(exp2.cooks)
+exp2.ci <- gen.ci(exp2.cooks)[3:4,]
 
-exp3a.results <- cbind(exp3a.1.table, exp3a.1.betas, exp3a.1.ci)
+exp2.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp2.control %>% filter(subj != "59-MR" & subj != "54-MR"))
+exp2.betas <- gen.beta(exp2.beta)
+
+exp2.results2 <- cbind(exp2.2.table, exp2.2.betas, exp2.2.ci)
 ```
 
-```{r exp3a.pre}
-exp3a.control <- exp3.avg %>% filter(agegroup=="10 months" & phase=="control") 
-
-exp3a.2 <- lmer(loglook ~ type + (1|subj),
-               data = exp3a.control)
-
-# id influential observations
-plot(influence(exp3a.2, "subj"), which="cook",
-     cutoff=4/30, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation
-
-exp3a.2.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3a.control %>% filter(subj != "21-MR"))
-
-exp3a.2.table <- gen.m(exp3a.2.cooks)
-exp3a.2.ci <- gen.ci(exp3a.2.cooks)[3:4,]
-
-exp3a.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3a.control %>% filter(subj != "21-MR"))
-exp3a.2.betas <- gen.beta(exp3a.2.beta)
-
-exp3a.results2 <- cbind(exp3a.2.table, exp3a.2.betas, exp3a.2.ci)
-```
-
-```{r exp3a.pre.vs.test}
-# exp3a.control.test <- long %>%
-#   filter(type == "Prefam High" | type == "Prefam Low" | type == "Higher" | type == "Lower") %>%
-# filter(experiment == "MR10") %>%
-#   mutate(phase = as.factor(case_when((type == "Prefam High" | type == "Prefam Low") ~ "prefam",
-#                            (type == "Higher" | type == "Lower") ~ "test"))) %>%
-#   mutate(cliff = as.factor(case_when((type == "Prefam High" | type == "Higher") ~ "deeper",
-#                                      (type == "Prefam Low" | type == "Lower") ~ "shallower")))
-
-exp3a.control.test <- exp3.avg %>%
-  filter(agegroup=="10 months") %>%
+```{r exp2.pre.vs.test}
+exp2.control.test <- exp2.avg %>%
   mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
                            type=="shallow" | type =="lower" ~ "shallow"))
 
-# summary.mr <- summarySEwithin(data = exp3a.control.test, measurevar = "look", withinvars = c("cliff", "type", "phase"), idvar="subj")
   
-exp3a.control.test$type <- as.factor(exp3a.control.test$type)
+exp2.control.test$type <- as.factor(exp2.control.test$type)
 
-exp3a.3 <- lmer(loglook ~ cliff * phase + (1|subj),
-                     data = exp3a.control.test)
+exp2.3 <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp2.control.test)
 
-plot(influence(exp3a.3, "subj"), which="cook",
+plot(influence(exp2.3, "subj"), which="cook",
      cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
+# 1 influential observation
 
-exp3a.3.table <- gen.m(exp3a.3)
-exp3a.3.ci <- gen.ci(exp3a.3)[3:6,]
+exp2.3.cooks <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp2.control.test)
 
-exp3a.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
-                     data = exp3a.control.test)
-exp3a.3.betas <- gen.beta(exp3a.3.beta)
+exp2.3.table <- gen.m(exp2.3)
+exp2.3.ci <- gen.ci(exp2.3)[3:6,]
 
-exp3a.results3 <- cbind(exp3a.3.table,exp3a.3.betas,exp3a.3.ci)
+exp2.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
+                     data = exp2.control.test)
+exp2.3.betas <- gen.beta(exp2.3.beta)
+
+exp2.results3 <- cbind(exp2.3.table,exp2.3.betas,exp2.3.ci)
 ```
 
-# Experiment 3: Minimizing risk (13-month-old infants)
-```{r exp3b.primary}
-
-exp3b.avg <- exp3.avg %>% filter(agegroup=="13 months" & phase=="testavg") 
-
-exp3b.info <- info(exp3b.avg)
-
-
-exp3b.0 <- lmer(loglook ~ 1 + (1|subj),
-               data = exp3b.avg)
-
-exp3b.1 <- lmer(loglook ~ type + (1|subj),
-               data = exp3b.avg)
-
-# id influential observations
-plot(influence(exp3b.1, "subj"), which="cook",
-     cutoff=4/30, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation
-
-exp3b.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3b.avg %>% filter(subj != "24-MR"))
-exp3b.1.table <- gen.m(exp3b.1.cooks)
-exp3b.1.ci <- gen.ci(exp3b.1.cooks)[3:4,]
-
-exp3b.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3b.avg %>% filter(subj != "24-MR"))
-exp3b.1.betas <- gen.beta(exp3b.1.beta)
-
-exp3b.results <- cbind(exp3b.1.table, exp3b.1.betas, exp3b.1.ci)
-```
-
-```{r exp3b.pre}
-
-exp3b.control <- exp3.avg %>% filter(agegroup=="13 months" & phase=="control") 
-
-exp3b.2 <- lmer(loglook ~ type + (1|subj),
-               data = exp3b.control)
-
-# id influential observations
-plot(influence(exp3b.2, "subj"), which="cook",
-     cutoff=4/30, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation
-
-exp3b.2.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3b.control %>% filter(subj != "59-MR" & subj != "54-MR"))
-
-exp3b.2.table <- gen.m(exp3b.2.cooks)
-exp3b.2.ci <- gen.ci(exp3b.2.cooks)[3:4,]
-
-exp3b.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3b.control %>% filter(subj != "59-MR" & subj != "54-MR"))
-exp3b.2.betas <- gen.beta(exp3b.2.beta)
-
-exp3b.results2 <- cbind(exp3b.2.table, exp3b.2.betas, exp3b.2.ci)
-```
-
-```{r exp3b.pre.vs.test}
-exp3b.control.test <- exp3.avg %>%
-  filter(agegroup=="13 months") %>%
-  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
-                           type=="shallow" | type =="lower" ~ "shallow"))
-
-
-# summary.mr <- summarySEwithin(data = exp3b.prefam.test, measurevar = "look", withinvars = c("cliff", "type", "phase"), idvar="subj")
-  
-exp3b.control.test$type <- as.factor(exp3b.control.test$type)
-
-exp3b.3 <- lmer(loglook ~ cliff * phase + (1|subj),
-                     data = exp3b.control.test)
-
-plot(influence(exp3b.3, "subj"), which="cook",
-     cutoff=4/30, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp3b.3.table <- gen.m(exp3b.3)
-exp3b.3.ci <- gen.ci(exp3b.3)[3:6,]
-
-exp3b.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
-                     data = exp3b.control.test)
-exp3b.3.betas <- gen.beta(exp3b.3.beta)
-
-exp3b.results3 <- cbind(exp3b.3.table,exp3b.3.betas,exp3b.3.ci)
-```
-
-
-# Exp 3: Age groups together
-```{r exp3.together}
-exp3.avg.test <- exp3.avg %>% filter(phase == "testavg")
-
-exp3.0 <- lmer(loglook ~ 1 + (1|subj),
-               data = exp3.avg.test)
-summary(exp3.0)
-
-exp3.1 <- lmer(loglook ~ type + (1|subj),
-               data = exp3.avg.test)
-summary(exp3.1)
-
-# id influential observations
-plot(influence(exp3.1, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp3.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3.avg.test %>% filter(subj != "03-MR"))
-exp3.1.table <- gen.m(exp3.1.cooks)
-exp3.1.ci <- gen.ci(exp3.1.cooks)[3:4,]
-
-exp3.1.beta <- lmer(scale(loglook) ~ type+ (1|subj),
-               data = exp3.avg.test %>% filter(subj != "03-MR"))
-exp3.1.betas <- gen.beta(exp3.1.beta)
-
-exp3.results0 <- cbind(exp3.1.table, exp3.1.betas, exp3.1.ci)
-```
-
-```{r exp3.pre.1013}
-exp3.control <- exp3.avg %>% filter(phase == "control")
-
-exp3.2 <- lmer(loglook ~ type + (1|subj),
-               data = exp3.control)
-
-# id influential observations
-plot(influence(exp3.2, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# one influential observation
-
-exp3.2.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp3.control %>% filter(subj != "21-MR" & subj != "28-MR"))
-
-exp3.2.table <- gen.m(exp3.2.cooks)
-exp3.2.ci <- gen.ci(exp3.2.cooks)[3:4,]
-
-exp3.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3.control %>% filter(subj != "21-MR" & subj != "28-MR"))
-exp3.2.betas <- gen.beta(exp3.2.beta)
-
-exp3.results2 <- cbind(exp3.2.table, exp3.2.betas, exp3.2.ci)
-```
-
-```{r exp3.pre.vs.test.1013}
-# exp3.prefam.test <- long %>%
-#   filter(type == "Prefam High" | type == "Prefam Low" | type == "Higher" | type == "Lower") %>%
-#   filter(exp == "Exp.3" | exp=="Exp.1") %>%
-#   mutate(phase = as.factor(case_when((type == "Prefam High" | type == "Prefam Low") ~ "prefam",
-#                            (type == "Higher" | type == "Lower") ~ "test"))) %>%
-#   mutate(cliff = as.factor(case_when((type == "Prefam High" | type == "Higher") ~ "deeper",
-#                                      (type == "Prefam Low" | type == "Lower") ~ "shallower"))) %>%
-#     mutate(agegroup = as.factor(case_when(agem < 12 ~ "10 months",
-#                             agem > 12 ~ "13 months")))
-# 
-# summary.mr <- summarySEwithin(data = exp3.prefam.test, measurevar = "look", withinvars = c("cliff", "type", "phase"), idvar="subj")
-
+# Experiment 3: Minimizing risk replication (no shattering)
+```{r exp3.pre.vs.test}
 exp3.control.test <- exp3.avg %>%
-  # filter(agegroup=="13 months") %>%
   mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
                            type=="shallow" | type =="lower" ~ "shallow"))
 
@@ -939,86 +608,55 @@ exp3.3 <- lmer(loglook ~ cliff * phase + (1|subj),
                      data = exp3.control.test)
 
 plot(influence(exp3.3, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
+     cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
+# no influential observations 
 
-exp3.3.table <- gen.m(exp3.3)
-exp3.3.ci <- gen.ci(exp3.3)[3:6,]
+exp3.3.cooks <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp3.control.test %>% filter(subj != "28"))
+
+exp3.3.table <- gen.m(exp3.3.cooks)
+exp3.3.ci <- gen.ci(exp3.3.cooks)[3:6,]
 
 exp3.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
-                     data = exp3.control.test)
+                     data = exp3.control.test %>% filter(subj != "28"))
 exp3.3.betas <- gen.beta(exp3.3.beta)
 
 exp3.results3 <- cbind(exp3.3.table,exp3.3.betas,exp3.3.ci)
+
+pairwise <- lsmeans(exp3.3.cooks, list(pairwise~cliff|phase))
+
+pairwise[[2]][1]
 ```
 
-```{r exp3.pre.vs.test.agediff}
 
-exp3.5 <- lmer(loglook ~ cliff * phase * agegroup + (1|subj), data = exp3.control.test)
+```{r exp3.test}
+exp3.avg <- exp3.avg %>% filter(phase=="testavg") 
 
-plot(influence(exp3.5, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
+exp3.info <- info(exp3.avg)
 
-exp3.5.table <- gen.m(exp3.5)
-exp3.5.ci <- gen.ci(exp3.5)[3:10,]
+exp3.0 <- lmer(loglook ~ 1 + (1|subj),
+               data = exp3.avg)
 
-exp3.5.beta <- lmer(scale(loglook) ~ cliff * phase * agegroup + (1|subj),
-                     data = exp3.control.test)
-exp3.5.betas <- gen.beta(exp3.5.beta)
-
-exp3.results5 <- cbind(exp3.5.table,exp3.5.betas,exp3.5.ci)
-```
-
-```{r exp3.diffpre}
-exp3.control 
-
-exp3.4 <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp3.control)
-summary(exp3.4)
+exp3.1 <- lmer(loglook ~ type + (1|subj),
+               data = exp3.avg)
 
 # id influential observations
-plot(influence(exp3.4, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
+plot(influence(exp3.1, "subj"), which="cook",
+     cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
+# no influential observations
 
-exp3.4.cooks <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp3.control %>% filter(subj != "21-MR" & subj != "28-MR"))
-exp3.4.table <- gen.m(exp3.4.cooks)
-exp3.4.ci <- gen.ci(exp3.4.cooks)[3:6,]
+exp3.1.table <- gen.m(exp3.1)
+exp3.1.ci <- gen.ci(exp3.1)[3:4,]
 
-exp3.4.beta <- lmer(scale(loglook) ~ type * agegroup + (1|subj),
-               data = exp3.control %>% filter(subj != "21-MR" & subj != "28-MR"))
-exp3.4.betas <- gen.beta(exp3.4.beta)
+exp3.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp3.avg)
+exp3.1.betas <- gen.beta(exp3.1.beta)
 
-exp3.results4 <- cbind(exp3.4.table, exp3.4.betas, exp3.4.ci)
-```
-
-```{r exp3.agediff}
-
-exp3.0 <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp3.avg.test)
-summary(exp3.0)
-
-# id influential observations
-plot(influence(exp3.0, "subj"), which="cook",
-     cutoff=4/60, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp3.0.cooks <- lmer(loglook ~ type * agegroup + (1|subj),
-               data = exp3.avg.test %>% filter(subj != "03-MR"))
-exp3.0.table <- gen.m(exp3.0.cooks)
-exp3.0.ci <- gen.ci(exp3.0.cooks)[3:6,]
-
-exp3.0.beta <- lmer(scale(loglook) ~ type * agegroup + (1|subj),
-               data = exp3.avg.test %>% filter(subj != "03-MR"))
-exp3.0.betas <- gen.beta(exp3.0.beta)
-
-exp3.results <- cbind(exp3.0.table, exp3.0.betas, exp3.0.ci)
+exp3.results <- cbind(exp3.1.table, exp3.1.betas, exp3.1.ci)
 ```
 
 ## Methods
