@@ -69,13 +69,15 @@ long.avg <- long %>%
                             agem > 12 ~ "older")))
 
 long.avg$type <- factor(long.avg$type)
+long.avg$phase <- factor(long.avg$phase)
+long.avg$exp <- factor(long.avg$exp)
+
 
 long.avg$sex <- relevel(as.factor(long.avg$sex), ref = "m")
 
-exp1.avg <-dplyr::filter(long.avg, exp == "Exp.1" & phase == "testavg")
+exp1.avg <-dplyr::filter(long.avg, exp == "Exp.1")
 exp2.avg <-dplyr::filter(long.avg, exp == "Exp.2")
 exp3.avg <-dplyr::filter(long.avg, exp == "Exp.3")
-luts.exp3 <- dplyr::filter(long.avg, experiment == "LUTS.Exp.3")
 
 risk.avg <- long.avg %>%
   filter(cost == "Risk",
@@ -406,7 +408,7 @@ risk1 <- ggplot(data = exp1.fig.data %>% filter(exp=="Exp.1"), aes(type, look, f
 risk1
 ```
 
-**Figure 3.** Looking time towards the test events presenting approaches to the goals attained through actions of higher vs. lower peril in Experiments 1-2, both (A) within and (B) collapsed across experiments.  Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data.  Beta coefficients (ß) indicate effect sizes in standard deviations.
+**Figure 2.** Looking time towards the test events in Experiment 2. 
 
 ```{r fig.exp2, include=TRUE, fig.width=10, fig.height=16}
 
@@ -457,7 +459,7 @@ exp2.figure + exp3.figure + plot_annotation(tag_levels = 'A')
 
 ```
 
-**Figure 4.**  Looking times from Experiment during the test events, in which the agent chose to jump across a deeper or shallower trench for a goal (A and B), and during the control events, in which infants’ attention was drawn over the deeper and shallower trenches (C and D). The looking times are presented by separately (A and C) and collapsed across age groups (B and D). Red error bars around means indicate within-subjects 95% confidence intervals. Pairs of points indicate data from a single participant. Horizontal bars within boxes indicate medians, and boxes indicate the middle 2 quartiles of data. Beta coefficients (ß) list effect sizes in standard deviations.
+**Figure 4.**  Looking times from Experiments 2 (in-lab) and 3 (online) during the control events (lighter) and the test events (darker).
 
 
 # Experiment 1: Inferring value from risk
@@ -496,16 +498,18 @@ exp1.results <- cbind(exp1.1.table, exp1.1.betas,exp1.1.ci)
 ## Methods
 
 ### Participants
-Our final sample of participants included N=`r info(exp1.avg)$n` 13-month-old infants (M=`r info(exp1.avg)$mean` months, range=`r info(exp1.avg)$min`-`r info(exp1.avg)$max`, `r info(exp1.avg)$f` female). Seven infants were excluded and replaced due to fussiness (3 infants) or inattentiveness during test trials (4 infants). All data were collected at the Harvard Lab for Developmental Studies with procedures approved by the Committee on the Protection of Human Subjects. The methods, sample size, hypotheses, and analyses were pre-registered at https://osf.io/bs3e7/. We chose to study 13-month-old infants in Experiment 1 because younger infants were not available at the time the study began, and because 13-month-old infants have more experience with standing, walking, and falling: experiences that may be important for the development of these abilities (Kretch & Adolph, 2013). 
+Our final sample of participants included N=`r info(exp1.avg)$n` 13-month-old infants (M=`r info(exp1.avg)$mean` months, range=`r info(exp1.avg)$min`-`r info(exp1.avg)$max`, `r info(exp1.avg)$f` female).  Seven infants were excluded and replaced due to fussiness (3 infants) or inattentiveness during test trials (4 infants). Participants were recruited through a database of families who expressed interest in cognitive development research in the Boston Area. Of the families in this database who chose to provide demographic information, 79.5% identified their children as White, 10.2% as Asian, 6.9% as Other, 2.5% as Black or African American, 0.4% as American Indian/Alaska Native, and 0.4% as Native Hawaiian/Pacific Islander; 90.3% as not Hispanic or Latino, 9.5% as Hispanic or Latino, and 0.2% as both. 90.4% of children had at least one parent or legal guardian with a college diploma or higher. All data were collected at the Harvard Lab for Developmental Studies with procedures approved by the Committee on the Use of Human Subjects. We chose to study 13-month-old infants, instead of 10-month-old infants (the age group we focused on in past research) (Liu et al., 2017) due both to constraints on our participant resources at the time, and due to the fact that 13-month-old infants have more experience with standing, walking, and falling: experiences that may be important for the development of these abilities. The sample size was chosen based on a simulation power analysis over the confirmatory analyses from 2 previous experiments with very similar structure (though these studies were conducted with 10-month-old infants: Experiments 1-2 from Liu et al., 2017), and we collected data until we attained our pre-specified N. The full pre-registration document, including full details about methods, sample size, hypotheses, and analysis plan, is accessible at  https://osf.io/bfvdc/files/.
+
 
 ### Data Coding and Analysis Strategy.
-All experimenters and coders were naive to the nature and the order of the test events and were unable to see what the babies saw during the experiment (they relied on trial-neutral sound cues to start each trial). To check for exclusions and coding errors, all test trial data were re-coded in Datavyu and excluded as necessary: If an infant looked away from a test event without ever having seen the agent jump, or if the trial ended too early or late, that trial was marked and excluded from subsequent analysis (`r ntrials$n_missing[1]` out of `r ntrials$total[1]` total test trials). We used these offline coded looking times for our final analyses. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[1]/2` out of `r ntrials$total[1]` trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp1rel,3)`.  All decisions to include or exclude trials or participants from our analysis were made by researchers who were blind to the events seen by infants.
+Infant looking times were coded online using XHAB (Pinto, 1995), and offline using Datavyu (Datavyu Team, 2014). All experimenters and coders were naive to the nature and the order of the test events and were unable to see what the babies saw during the experiment (they relied on trial-neutral sound cues to start each trial). To check for exclusions and coding errors, all test trial data were re-coded in Datavyu and excluded as necessary: If an infant looked away from a test event without ever having seen the agent jump, or if the trial ended too early or late, that trial was marked and excluded from subsequent analysis (`r ntrials$n_missing[2]` out of `r ntrials$total[2]` total test trials). We used these offline coded looking times for our final analyses. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[2]/2` out of `r ntrials$total[2]` trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp1rel,3)`.  All decisions to include or exclude trials or participants from our analysis were made by researchers who were blind to the events seen by infants.
 
-Infant looking times are often log-normally distributed (Csibra, Hernik, Mascaro, Tatone, & Lengyel, 2016), including in this dataset (log-likelihood of data for Experiments 1-4 under normal distribution = `r normal.ll`, under lognormal distribution = `r lognormal.ll`), so our pre-registered dependent measure was the average looking time towards the higher- or lower-danger choice at test in log seconds, and the values of unstandardized B coefficients and 95% confidence intervals are reported in this unit. Nevertheless, we include summary statistics and plots of untransformed looking times for interpretability. We analyzed all looking times using mixed effects models (Bates, Mächler, Bolker, & Walker, 2015) implemented in R. All analyses including repeated measures included a random intercept for participant identity. Analyses conducted over multiple experiments included a random intercept for experiment, except in one case where including this intercept lead to issues with convergence. For every model, we checked for influential participants using Cook’s Distance (Nieuwenhuis, te Grotenhuis, & Pelzer, 2012) and excluded any participants who exceeded the standard 4/n threshold, where n is the number of participants. The number of participants that met this criterion is listed in every model result. 
+Infant looking times are often log-normally distributed (Csibra, Hernik, Mascaro, Tatone, & Lengyel, 2016), including in this dataset (log-likelihood of data for Experiments 1-3 under normal distribution = `r normal.ll`, under lognormal distribution = `r lognormal.ll`), so our pre-registered dependent measure was the average looking time towards the higher- or lower-danger choice at test in log seconds, and the values of unstandardized B coefficients and 95% confidence intervals are reported in this unit. Nevertheless, we include summary statistics and plots of untransformed looking times for interpretability. We analyzed all looking times using mixed effects models (Bates et al., 2015) implemented in R. All analyses including repeated measures included a random intercept for participant identity. Analyses conducted over multiple experiments included a random intercept for experiment, except in one case where including this intercept led to issues with model convergence. For every model, we checked for influential participants using Cook’s Distance (Nieuwenhuis et al., 2012) and excluded any participants who exceeded the standard 4/n threshold, where n is the number of participants. The number of participants who met this criterion is listed in every model result, and including vs excluding these observations does not change the interpretation of any of our primary analyses. For results including all observations, see SOM. 
+
 
 ## Results
 ### Pre-registered results.
-We compared infants’ looking times when the agent approached the target for which it performed the more dangerous action (Higher Value) to the looking times when the agent approached the other target (Lower Value). Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action (Mlower=`r summary.1013$look[2]`s (SE `r summary.1013$sd[2]`), Mhigher=`r summary.1013$look[1]`s (SE `r summary.1013$sd[1]`), 95% confidence interval (CI) over difference in log seconds `r report(exp1.results,2,3,2)` excluding one influential participant). This looking preference is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action and looked longer when this expected outcome did not occur. 
+We compared infants’ looking times when the agent approached the target for which it performed the more dangerous action (Higher Value) to the looking times when the agent approached the other target (Lower Value). Thirteen-month-old infants looked longer when the agent chose the target achieved through the less dangerous action (Mlower=`r summary.avg$look[2]`s (SE `r summary.avg$se[2]`), Mhigher=`r summary.avg$look[1]`s (SE `r summary.avg$se[1]`), 95% confidence interval (CI) over difference in log seconds `r report(exp1.results,2,3,2)` excluding one influential participant). This finding is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action, and they looked longer when this expected outcome did not occur.
 
 # Experiment 2: Minimizing Risk
 ```{r exp2.primary}
@@ -562,7 +566,7 @@ exp2.beta <- lmer(scale(loglook) ~ type + (1|subj),
                data = exp2.control %>% filter(subj != "59-MR" & subj != "54-MR"))
 exp2.betas <- gen.beta(exp2.beta)
 
-exp2.results2 <- cbind(exp2.2.table, exp2.2.betas, exp2.2.ci)
+exp2.results2 <- cbind(exp2.table, exp2.betas, exp2.ci)
 ```
 
 ```{r exp2.pre.vs.test}
@@ -595,40 +599,21 @@ exp2.3.betas <- gen.beta(exp2.3.beta)
 exp2.results3 <- cbind(exp2.3.table,exp2.3.betas,exp2.3.ci)
 ```
 
+## Methods
+### Participants
+Our final sample of participants included `r exp2.info$n` 13-month-old infants (M=`r exp2.info$mean` months, range=`r exp2.info$min`-`r exp2.info$max`, `r exp2.info$f` female) We chose this sample size using a power analysis from a pilot study, as well as estimates of effect sizes of studies with similar displays and design (Liu & Spelke, 2017; Liu et al., 2017). We collected data until we attained our pre-specified N. Infants were excluded and replaced in the final sample due to fussiness that prevented study completion (3 infants), inattentiveness during test trials (2 infants), or interference from caregivers (2 infants). Our pre-registration document is available and open access at https://osf.io/efc3g/.
+
+### Data Coding and Analysis
+The data coding and analysis strategy for Experiment 3 were identical to those of Experiments 1 and 2. Twenty-five out of `r ntrials$total[3]` total trials (4 test trials and 2 control trials per participant) were excluded from the analysis based on inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (60 of 120 total test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp2rel,3)`.
+
+## Results
+Important note: In this paper, we report the results of a study originally pre-registered with a sample including both 10-month-old and 13-month-old infants. Because our investigation with 10-month-old infants is still ongoing, we deviate from our pre-registration by reporting only results from the older age group. Data from both age groups are open access at https://osf.io/kz7br/. 
+
+Thirteen-month-old infants looked longer at test when the agent, at test, chose to cross the deeper trench over the shallower trench (Mdeep=`r summary.avg$look[5]`s (SE=`r summary.avg$se[5]`), Mshallow=`r summary.avg$look[6]`s (SE=`r summary.avg$se[6]`), `r report(exp2.results,2,3,1)`, excluding one influential participant). See Figure 4A.
+
+ To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. During control events, 13-month-old infants preferred to look at events near the shallow trench (Mdeep=`r summary.avg$look[3]`s (SE=`r summary.avg$se[3]`), Mshallow=`r summary.avg$look[4]`s (SE=`r summary.avg$se[4]`), `r report(exp2.results2,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp2.results3,4,3,2)`). See Figure 4A.
+
 # Experiment 3: Minimizing risk replication (no shattering)
-```{r exp3.pre.vs.test}
-exp3.control.test <- exp3.avg %>%
-  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
-                           type=="shallow" | type =="lower" ~ "shallow"))
-
-  
-exp3.control.test$type <- as.factor(exp3.control.test$type)
-
-exp3.3 <- lmer(loglook ~ cliff * phase + (1|subj),
-                     data = exp3.control.test)
-
-plot(influence(exp3.3, "subj"), which="cook",
-     cutoff=4/30, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-# no influential observations 
-
-exp3.3.cooks <- lmer(loglook ~ cliff * phase + (1|subj),
-                     data = exp3.control.test %>% filter(subj != "28"))
-
-exp3.3.table <- gen.m(exp3.3.cooks)
-exp3.3.ci <- gen.ci(exp3.3.cooks)[3:6,]
-
-exp3.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
-                     data = exp3.control.test %>% filter(subj != "28"))
-exp3.3.betas <- gen.beta(exp3.3.beta)
-
-exp3.results3 <- cbind(exp3.3.table,exp3.3.betas,exp3.3.ci)
-
-pairwise <- lsmeans(exp3.3.cooks, list(pairwise~cliff|phase))
-
-pairwise[[2]][1]
-```
 
 
 ```{r exp3.test}
@@ -659,265 +644,124 @@ exp3.1.betas <- gen.beta(exp3.1.beta)
 exp3.results <- cbind(exp3.1.table, exp3.1.betas, exp3.1.ci)
 ```
 
+```{r exp2.pre}
+exp3.control <- exp3.control.test %>% filter(phase=="control") 
+
+exp3.2 <- lmer(loglook ~ type + (1|subj),
+               data = exp3.control)
+
+# id influential observations
+plot(influence(exp3.2, "subj"), which="cook",
+     cutoff=4/42, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# two influential observation
+
+exp3.2.cooks <- lmer(loglook ~ type + (1|subj),
+               data = exp3.control %>% filter(subj != "26" & subj != "28"))
+
+exp3.2.table <- gen.m(exp3.2.cooks)
+exp3.2.ci <- gen.ci(exp3.2.cooks)[3:4,]
+
+exp3.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp3.control %>% filter(subj != "26" & subj != "28"))
+exp3.2.betas <- gen.beta(exp3.2.cooks)
+
+exp3.results2 <- cbind(exp3.2.table, exp3.2.betas, exp3.2.ci)
+```
+
+
+```{r exp3.pre.vs.test}
+exp3.control.test <- exp3.avg %>%
+  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
+                           type=="shallow" | type =="lower" ~ "shallow"))
+
+  
+exp3.control.test$type <- as.factor(exp3.control.test$type)
+
+exp3.3 <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp3.control.test)
+
+plot(influence(exp3.3, "subj"), which="cook",
+     cutoff=4/30, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# 1 influential observation
+
+exp3.3.cooks <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp3.control.test %>% filter(subj != "28"))
+
+exp3.3.table <- gen.m(exp3.3.cooks)
+exp3.3.ci <- gen.ci(exp3.3.cooks)[3:6,]
+
+exp3.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
+                     data = exp3.control.test %>% filter(subj != "28"))
+exp3.3.betas <- gen.beta(exp3.3.beta)
+
+exp3.results3 <- cbind(exp3.3.table,exp3.3.betas,exp3.3.ci)
+```
+
+```{r pairwise}
+# probably should have pre-registered this instead of 2 separate models
+pairwise0 <- lsmeans(exp3.3.cooks, list(pairwise~cliff|phase)) 
+
+pairwise.beta <- lsmeans(exp3.3.beta, list(pairwise~cliff|phase)) 
+
+pairwise.beta.value <- pairwise.beta[[2]] %>% as.data.frame() %>% select(contrast, phase, estimate) %>%
+  rename(beta = estimate)
+
+pairwise.CI <- confint(pairwise0[[2]]) %>% as.data.frame()
+
+pairwise.t.p <- pairwise0[[2]] %>% as.data.frame()
+
+within.exp3.almost <- full_join(pairwise.CI, pairwise.t.p) %>%
+  rename(est = estimate,
+         se = SE,
+         lower = lower.CL,
+         upper = upper.CL,
+         t = t.ratio,
+         p = p.value)
+
+within.exp3 <- full_join(pairwise.beta.value, within.exp3.almost)
+```
+
+```{r other.info.exp3}
+wide %>%
+  filter(exp == "Exp.3") %>%
+  tabyl(device)
+
+wide %>%
+  filter(exp == "Exp.3") %>%
+  tabyl(highchair)
+
+wide %>%
+  filter(exp == "Exp.3") %>%
+  summarise(vquality = mean(video_quality, na.rm=TRUE),
+            vquality.sd = sd(video_quality, na.rm=TRUE),
+            aquality = mean(audio_quality, na.rm=TRUE),
+            aquality.sd = sd(audio_quality, na.rm=TRUE))
+
+```
+
 ## Methods
 ### Participants
-Our final sample of participants included N=`r exp3a.info$n` 10-month-old infants (M=`r exp3a.info$mean` months, range=`r exp3a.info$min`-`r exp3a.info$max`, `r exp3a.info$f` female) and N=`r exp3b.info$n` 13-month-old infants (M=`r exp3b.info$mean` months, range=`r exp3b.info$min`-`r exp3b.info$max`, `r exp3b.info$f` female). We chose this sample size using a power analysis from a pilot study (effect size ß=0.323), as well as estimates of effect sizes of studies with similar displays and design (Liu & Spelke, 2017; Liu et al., 2017). Eight infants were excluded and replaced in the final sample due to fussiness (3 infants), inattentiveness during test trials (3 infants), or interference from caregivers (2 infants). The methods, sample size, hypotheses, and analyses of this experiment were pre-registered and open access at https://osf.io/kx928/.
+Our final sample consisted of `r exp3.info$n` 12- to 15-month-old infants (M=`r exp3.info$mean` months, range=`r exp3.info$min`-`r exp3.info$max`, `r exp3.info$f` female). We chose a slightly wider age range relative to Experiment 2 to enable more rapid online participant recruitment. We recruited participants both from our lab database, as in Experiments 1-2, and through Children Helping Science (https://childrenhelpingscience.com/). We chose this sample size based on a simulation power analysis over infants’ looking preferences towards the test events from Experiment 2. A total of 6 infants were excluded and replaced in the final sample (3 due to technical issues, 2 due to inattentiveness and 1 due to interference from the caregiver).  Our pre-registration document is available at https://osf.io/96qsf/. Our pre-registered target sample size was N=40, and our stopping rule was to stop recruiting as soon as we reached our target N, but to finish collecting data if we accidentally over-recruited. Thus, our final sample was N=42.
 
-### Data Coding and Analysis
-The data coding and analysis strategy for Experiment 3 were identical to those of Experiments 1 and 2. Thirty-nine out of `r ntrials$total[3]` total trials (4 test trials and 2 control trials per participant) were excluded from the analysis based on inattentiveness or coding error. To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[3]/2` of `r ntrials$total[3]` total test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp3rel,3)`.
+
+### Procedure
+Whereas Experiments 1-2 were conducted in a quiet, dark room in a lab setting, Experiment 3 was conducted over Zoom, in infants’ homes, due to the COVID-19 pandemic. As in Experiments 1-2, all procedures were approved by the Committee on the Use of Human Subjects at Harvard University. We used materials developed by the Stanford Social Learning Lab (Social Learning Lab, 2020) to introduce caregivers to the online testing setup and to ask for verbal consent. Caregivers also provided written consent prior to the study session. Whereas infants in Experiments 1-2 sat on their caregivers’ laps and watched our displays on a large projector screen, infants in Experiment 3 sat in a high chair (25 out of 42 participants) or their caregivers’ laps (17/42), depending on families’ preferences, and watched the displays on a tablet (8/42) or a laptop computer (34/42). We provided caregivers with instructions, both before and during the study, to minimize distractions (pets, people walking by, and distracting objects) during the study session. 
+
+To maximize the quality of the events seen by infants, we shared our stimuli with caregivers through YouTube playlists. We then controlled the caregiver’s screen using Zoom’s remote control feature, and coded looking times during the study using jHab (Casstevens 2007). Then, we double checked for trial exclusions and generated the final data from the recording of the session video using Datavyu (Datavyu Team 2014). After the session, caregivers rated the quality of the audio and video on a 5-point Likert scale (1 = very poor; 5 = very good). Caregivers, on average, gave high ratings for both (video: M=4.88, SD=0.34; audio: M=4.85, SD=0.36). Because the experimenter did not know which YouTube playlist included which videos, and only had access to the video feed of infants’ faces (and not the stimuli) during the experiment, they were unaware of the order of test events. Because we did not want to prevent caregivers from stopping or intervening at home in case of a safety issue, we did not ask caregivers to close their eyes, and instead sat them behind their infants (for high-chair sessions), and instructed them to refrain from directing their infants’ attention towards and away from the screen. See SOM for our online testing protocol. 
+
+#### Data Coding and Analysis
+The data coding and analysis strategy for Experiment 3 were identical to those from Experiment 2. Fifty-three out of `r ntrials$total[4]` total trials (including familiarization, test, and control trials) were excluded from analysis because of inattentiveness, distractions at home (e.g. pet noises, people walking by), technical issues and coding errors. We note that the proportion of excluded trials (10.5%) was higher than what we observed in the lab in Experiment 2 (5.56%), likely due to a combination of reasons, including: distractions in the home environment, the smaller size of the screen displaying the videos at home, and lower quality and more variable video feeds of the infants’ faces (which could lead to more trial mis-timings).  To assess the reliability of the data, 50% of test trials from the experiment (84 of 168 test trials) were re-coded Datavyu by an additional researcher who was also unaware of the order of test events. Interrater reliability was high, `r reporticc(exp3rel,3)`.
 
 ## Results
 ### Pre-registered results
-Across both age groups, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[7]`s (SD=`r summary.avg$sd[7]`), Mshallow=`r summary.avg$look[8]`s (SD=`r summary.avg$sd[8]`), `r report(exp3.results0,2,3,1)`, excluding one influential participant). See Figure 5.
+We fully replicated the two key results from Experiment 2. First, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeeper=`r summary.avg$look[10]`s, Mshallower=`r summary.avg$look[9]`s, pooled SE=`r summary.avg$se[10]`, `r report(exp3.results,1,3,2)`, no influential participants). Second, infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3, 4, 2, 3)`, excluding 1 inlufential participant). 
 
-### Comparing test events to control events
-To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants showed a preference for the shallower trench in this context (Mdeep=`r summary.avg$look[5]`s (SD=`r summary.avg$sd[5]`), Mshallow=`r summary.avg$look[6]`s (SD=`r summary.avg$sd[6]`), `r report(exp3.results2,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3,4,3,2)`). Thus, infants’ expectations at test cannot be due to an intrinsic preference for events occurring over deeper to those over shallower trenches.
-
-### Exploring age differences
-#### Results in 13-month-old infants
-Thirteen-month-old infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (Mdeep=`r summary.1013$look[11]`s (SD=`r summary.1013$sd[11]`), Mshallow=`r summary.1013$look[12]`s (SD=`r summary.1013$sd[12]`), 
-`r report(exp3b.results, 2, 3, 1)`, excluding one influential participant. During control events, 13-month-old infants preferred to look at the shallow trench (Mdeep=`r summary.1013$look[9]`s (SD=`r summary.1013$sd[9]`), Mshallow=`r summary.1013$look[10]`s (SD=`r summary.1013$sd[10]`), `r report(exp3b.results2,2,3,2)`, excluding 2 influential participants). Their looking preferences significantly differed across the two conditions, `r report(exp3b.results3,4,3,2)`, two-tailed. 
-
-#### Results in 10-month-old infants
-
-Ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.1013$look[7]`s (SD=`r summary.1013$sd[7]`), Mshallow=`r summary.1013$look[8]`s (SD=`r summary.1013$sd[8]`), `r report(exp3a.results,2,3,1)`, excluding one influential participant. During control events, 10-month-old infants displayed no strong looking preference (Mdeep=`r summary.1013$look[5]`s (SD=`r summary.1013$sd[5]`), Mshallow=`r summary.1013$look[6]`s (SD=`r summary.1013$sd[6]`), `r report(exp3a.results2,2,3,2)`, excluding 1 influential participant). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3a.results3,4,3,2)`.
-
-#### Comparing 10-month-old and 13-month-old infants
-
-The two groups of infants did not differ in their looking preferences between the two test events (`r report(exp3.results, 4, 3, 2)`, excluding one influential participant), or between the two control events (`r report(exp3.results4, 4, 3, 2)`, excluding 2 influential participants).  Infants of the two ages also did not show different looking preferences between the control and test events (`r report(exp3.results5, 8, 3, 2)`). 
-
-# Experiment 4: Replication of Experiment 3 (13-month-old infants)
-
-# Data reliability and coding
-To assess the reliability of the data, 50% of test trials from the experiment (`r ntrials$total[4]/2` of `r ntrials$total[4]` total test trials) were re-coded Datavyu by an additional researcher who was naive to test event order. Reliability was high, `r reporticc(exp4rel,3)`.
-
-## Pre-registered Analysis: Long looking to perilous action, different from control actions
-```{r}
-exp4.avg$type <- relevel(exp4.avg$type, ref = "lower")
-exp4.test <- exp4.avg %>% filter(phase == "testavg")
-
-
-exp4.1 <- lmer(data = exp4.test, 
-     formula = loglook ~ type + (1|subj))
-summary(exp4.1)
-# no influential subjects found
-plot(influence(exp4.1, "subj"), which="cook",
-     cutoff=4/42, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp4.1.table <- gen.m(exp4.1)
-exp4.1.ci <- gen.ci(exp4.1)[3:4,]
-
-exp4.1.beta <- lmer(scale(loglook) ~type + (1|subj),
-               data = exp4.test)
-exp4.1.betas <- gen.beta(exp4.1.beta)
-
-exp4.1.results <- cbind(exp4.1.table, exp4.1.betas, exp4.1.ci)
-
-```
-
-```{r}
-exp4.control.test <- exp4.avg %>%
-  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
-                           type=="shallow" | type =="lower" ~ "shallow"))
-exp4.control.test$cliff <- as.factor(exp4.control.test$cliff)
-
-exp4.2 <- lmer(data = exp4.control.test, 
-     formula = loglook ~ cliff * phase + (1|subj))
-summary(exp4.2)
-
-plot(influence(exp4.2, "subj"), which="cook",
-     cutoff=4/42, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp4.2.cooks <- lmer(data = exp4.control.test %>% filter(subj != "28" & subj != "26"), 
-     formula = loglook ~ cliff * phase + (1|subj))
-exp4.2.table <- gen.m(exp4.2.cooks)
-exp4.2.ci <- gen.ci(exp4.2.cooks)[3:6,]
-
-exp4.2.beta <- lmer(scale(loglook) ~cliff * phase + (1|subj),
-               data = exp4.control.test %>% filter(subj != "28" & subj != "26"))
-exp4.2.betas <- gen.beta(exp4.2.beta)
-
-exp4.2.results <- cbind(exp4.2.table, exp4.2.betas, exp4.2.ci)
-```
-
-```{r}
-exp4.control <- exp4.avg %>%
-  filter(phase=="control") %>%
-  mutate(cliff = type)
-
-exp4.3 <- lmer(data = exp4.control, 
-     formula = loglook ~ cliff + (1|subj))
-summary(exp4.3)
-
-plot(influence(exp4.3, "subj"), which="cook",
-     cutoff=4/42, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp4.3.cooks <- lmer(data = exp4.control %>%
-                       filter(subj != "28",
-                              subj != "26"), 
-     formula = loglook ~ cliff + (1|subj))
-exp.4.3.table <- gen.m(exp4.3.cooks)
-exp.4.3.ci <- gen.ci(exp4.3.cooks)[3:4,]
-
-exp4.3.cooks.beta <- lmer(data = exp4.control %>%
-                       filter(subj != "28",
-                              subj != "26"), 
-     formula = scale(loglook) ~ cliff + (1|subj))
-exp.4.3.betas <- gen.beta(exp4.3.cooks.beta)
-
-exp.4.3.results <- cbind(exp.4.3.table, exp.4.3.betas, exp.4.3.ci)
-```
-
-```{r}
-wide %>%
-  filter(exp == "Exp.4") %>%
-  tabyl(device)
-
-wide %>%
-  filter(exp == "Exp.4") %>%
-  tabyl(highchair)
-
-wide %>%
-  filter(exp == "Exp.4") %>%
-  summarise(vquality = mean(video_quality, na.rm=TRUE),
-            vquality.sd = sd(video_quality, na.rm=TRUE),
-            aquality = mean(audio_quality, na.rm=TRUE),
-            aquality.sd = sd(audio_quality, na.rm=TRUE))
-
-# wide %>%
-#   filter(exp == "Exp.4") %>%
-#   tabyl(chs)
-
-```
-
-### Participants
-Our final sample of participants included N=`r info(exp4.avg)$n` 13-month-old infants (M=`r info(exp4.avg)$mean` months, range=`r info(exp4.avg)$min`-`r info(exp4.avg)$max`, `r info(exp4.avg)$f/2` female).
-
-### Pre-registered results
-Infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[11]`s (SD=`r summary.avg$sd[11]`), Mshallow=`r summary.avg$look[12]`s (SD=`r summary.avg$sd[12]`), `r report(exp4.1.results,2,3,1)`, no influential participants). See Figure x.
-
-### Comparing test events to control events
-To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants showed a numerical but non-significant preference for the shallower trench in this context (Mdeep=`r summary.avg$look[9]`s (SD=`r summary.avg$sd[9]`), Mshallow=`r summary.avg$look[10]`s (SD=`r summary.avg$sd[10]`), `r report(exp.4.3.results,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp4.2.results,4,3,2,1)`). 
-
-
-
-# Experiment 5: Replication of Experiment 3 (10-month-old infants)
-```{r}
-exp5.avg$type <- relevel(exp5.avg$type, ref = "lower")
-exp5.test <- exp5.avg %>% filter(phase == "testavg")
-
-
-exp5.1 <- lmer(data = exp5.test, 
-     formula = loglook ~ type + (1|subj))
-summary(exp5.1)
-# 1 influential subject found
-plot(influence(exp5.1, "subj"), which="cook",
-     cutoff=4/40, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp5.1.cooks <- lmer(data = exp5.test %>% filter(subj != "10m_33"), 
-     formula = loglook ~ type + (1|subj))
-summary(exp5.1.cooks)
-
-exp5.1.table <- gen.m(exp5.1.cooks)
-exp5.1.ci <- gen.ci(exp5.1.cooks)[3:4,]
-
-exp5.1.beta <- lmer(scale(loglook) ~type + (1|subj),
-               data = exp5.test %>% filter(subj != "10m_33"))
-exp5.1.betas <- gen.beta(exp5.1.beta)
-
-exp5.1.results <- cbind(exp5.1.table, exp5.1.betas, exp5.1.ci)
-
-```
-
-```{r}
-exp5.control.test <- exp5.avg %>%
-  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
-                           type=="shallow" | type =="lower" ~ "shallow"))
-exp5.control.test$cliff <- as.factor(exp5.control.test$cliff)
-
-exp5.2 <- lmer(data = exp5.control.test, 
-     formula = loglook ~ cliff * phase + (1|subj))
-summary(exp5.2)
-
-# no influential subjects detected
-plot(influence(exp5.2, "subj"), which="cook",
-     cutoff=4/40, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp5.2.table <- gen.m(exp5.2)
-exp5.2.ci <- gen.ci(exp5.2)[3:6,]
-
-exp5.2.beta <- lmer(scale(loglook) ~cliff * phase + (1|subj),
-               data = exp5.control.test)
-exp5.2.betas <- gen.beta(exp5.2.beta)
-
-exp5.2.results <- cbind(exp5.2.table, exp5.2.betas, exp5.2.ci)
-```
-
-```{r}
-exp5.control <- exp5.avg %>%
-  filter(phase=="control") %>%
-  mutate(cliff = type)
-
-exp5.3 <- lmer(data = exp5.control, 
-     formula = loglook ~ cliff + (1|subj))
-summary(exp5.3)
-
-plot(influence(exp5.3, "subj"), which="cook",
-     cutoff=4/40, sort=TRUE,
-     xlab="Cook´s Distance",
-     ylab="Subject ID")
-
-exp.5.3.table <- gen.m(exp5.3)
-exp.5.3.ci <- gen.ci(exp5.3)[3:4,]
-
-exp5.3.beta <- lmer(data = exp5.control,
-     formula = scale(loglook) ~ cliff + (1|subj))
-exp.5.3.betas <- gen.beta(exp5.3.beta)
-
-exp.5.3.results <- cbind(exp.5.3.table, exp.5.3.betas, exp.5.3.ci)
-```
-
-```{r}
-wide %>%
-  filter(exp == "Exp.5") %>%
-  tabyl(device)
-
-wide %>%
-  filter(exp == "Exp.5") %>%
-  tabyl(highchair)
-
-wide %>%
-  filter(exp == "Exp.5") %>%
-  summarise(vquality = mean(video_quality, na.rm=TRUE),
-            vquality.sd = sd(video_quality, na.rm=TRUE),
-            aquality = mean(audio_quality, na.rm=TRUE),
-            aquality.sd = sd(audio_quality, na.rm=TRUE))
-
-# wide %>%
-#   filter(exp == "Exp.5") %>%
-#   tabyl(chs)
-
-```
-
-
-### Participants
-Our final sample of participants included N=`r info(exp5.avg)$n` 10-month-old infants (M=`r info(exp5.avg)$mean` months, range=`r info(exp5.avg)$min`-`r info(exp5.avg)$max`, `r info(exp5.avg)$f/2` female).
-
-### Pre-registered results
-Infants looked equally at test when the agent chose to jump the deeper trench vs when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[15]`s (SD=`r summary.avg$sd[15]`), Mshallow=`r summary.avg$look[16]`s (SD=`r summary.avg$sd[16]`), `r report(exp5.1.results,2,3,1)`, excluding 1 influential participant). See Figure x.
-
-### Comparing test events to control events
-To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants did not show a looking preference across these test events (Mdeep=`r summary.avg$look[13]`s (SD=`r summary.avg$sd[13]`), Mshallow=`r summary.avg$look[14]`s (SD=`r summary.avg$sd[14]`), `r report(exp.5.3.results,2,3,2)`, no influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp5.2.results,4,3,2,1)`, no influential participants). 
+### Exploratory results
+During the control events, infants showed a numerical but non-significant preference for the shallower trench in this context (Mdeeper=`r summary.avg$look[7]`s, Mshallower=`r summary.avg$look[8]`s, pooled SE=`r summary.avg$se[8]`, `r report(exp3.results2, 2, 3, 2)`, excluding 2 influential participants). See Figure 4A.
 
 # Supplemental Online Materials
 
@@ -1034,37 +878,15 @@ exp3.everyone.prevstest.results <- cbind(exp3.everyone.prevstest.betas,exp3.ever
 
 
 ### Experiment 1
-Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action  Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action (Mlower=`r summary.1013$look[2]`s, Mhigher=`r summary.1013$look[1]`s, 95% confidence interval (CI) over difference in log seconds `r report(exp1.everyone.results,2,3,2)`). This looking preference is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action and looked longer when this expected outcome did not occur. 
+Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action  Thirteen-month-old infants looked longer when the agent chose the target achieved through the lower-danger action (`r report(exp1.everyone.results,2,3,2)`). This looking preference is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action and looked longer when this expected outcome did not occur. 
 
 ### Experiment 2
-Ten-month-old infants did not show a statistically significant looking preference between the test events, (Mlower=`r summary.1013$look[4]`s, Mhigher=`r summary.1013$look[3]`s, `r report(exp2.everyone.results,2,3,1)`, mixed effect model with fixed effect of test event and random intercept for participant identity).
+Infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (`r report(exp2.everyone.test.results, 2, 3, 1)`. During control events, 13-month-old infants preferred to look at the shallow trench(`r report(exp2.everyone.pre.results,2,3,2)`). Their looking preferences significantly differed across the two phases of the experiment, `r report(exp2.everyone.prevstest.results,4,3,2)`).
 
 ### Experiment 3
-#### Collapsing across age groups
-Across both age groups, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[7]`s, Mshallow=`r summary.avg$look[8]`s, `r report(exp3.everyone.1013.test.results,2,3,1)`).
+Infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (`r report(exp3.everyone.test.results, 2, 3, 1)`, excluding one influential participant. During control events, infants did not show a strong preference for either event (`r report(exp3.everyone.pre.results,2,3,2)`). Their looking preferences significantly differed across the two phases of the experiment, `r report(exp3.everyone.prevstest.results,4,3,2)`).
 
-During the control events, infants showed a preference for the shallower trench in this context (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, `r report(exp3.everyone.1013.pre.results,2,3,2)`). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.everyone.1013.prevstest.results,4,3,2)`). Thus, infants’ expectations at test cannot be due to an intrinsic preference for events occurring over deeper to those over shallower trenches.
-
-#### 13-month-olds
-Thirteen-month-old infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (Mdeep=`r summary.1013$look[11]`s, Mshallow=`r summary.1013$look[12]`s, `r report(exp3.everyone.13.test.results, 2, 3, 1)`, excluding one influential participant. During control events, 13-month-old infants preferred to look at the shallow trench (Mdeep=`r summary.1013$look[9]`s, Mshallow=`r summary.1013$look[10]`s, `r report(exp3.everyone.13.pre.results,2,3,2)`). Their looking preferences significantly differed across the two conditions, `r report(exp3.everyone.13.prevstest.results,4,3,2)`).
-
-#### 10-month-olds
-Ten-month-old looked marginally at test when the agent chose the deeper the shallower trench (Mdeep=`r summary.1013$look[7]`s, Mshallow=`r summary.avg$look[8]`s, `r report(exp3.everyone.10.test.results,2,3,1)`). During control events, 10-month-old infants displayed no looking preference (Mdeep=`r summary.1013$look[5]`s, Mshallow=`r summary.1013$look[6]`s, `r report(exp3.everyone.10.pre.results,2,3,2)`). In contrast to the data from the 13-month-old infants, however, these two patterns of looking preference did not differ from each other, `r report(exp3.everyone.10.prevstest.results,4,3,2)`.
-
-### Experiment 4
-Thirteen-month-old infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[11]`s, Mshallow=`r summary.avg$look[12]`s, `r report(exp4.everyone.results,2,3,1)`).
-
-During the control events, infants showed a preference for the shallower trench in this context (Mdeep=`r summary.avg$look[9]`s, Mshallow=`r summary.avg$look[10]`s, `r report(exp.4.3.results.everyone,2,3,2)`). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp4.everyone.results2,4,3,2)`). This fully replicates Experiment 3.
-
-### Experiment 5
-Ten-month-old infants did not show a looking preference between events when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[15]`s, Mshallow=`r summary.avg$look[16]`s, `r report(exp5.everyone.results,2,3,1)`).
-
-During the control events, infants again did not show a looking preference (Mdeep=`r summary.avg$look[13]`s, Mshallow=`r summary.avg$look[14]`s, `r report(exp.5.3.results.everyone,2,3,2)`). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp5.everyone.results2,4,3,2)`). 
-
-Neither of these results are consistent with what we found in Experiment 3. 
-
-
-## Order effects in Experiments 1 and 2 (reviewer suggestion)
+## Order effects in Experiment 1 (reviewer suggestion)
 
 ### Experiment 1
 ```{r order.exp1}
@@ -1083,24 +905,7 @@ exp1.ordereffects <- cbind(exp1.order.table, exp1.order.beta, exp1.order.ci)
 
 ```
 
-### Experiment 2
-```{r order.exp2}
-
-exp2.order <- lmer(data = exp2.avg,
-                   formula = loglook ~ first_fam * type + (1|subj))
-exp2.order.table <- gen.m(exp2.order)
-exp2.order.ci <- gen.ci(exp2.order)[3:6,]
-
-
-exp2.order.betas <- lmer(data = exp2.avg,
-                   formula = scale(loglook) ~ first_fam * type + (1|subj))
-exp2.order.beta <- gen.beta(exp2.order.betas)
-
-exp2.ordereffects <- cbind(exp2.order.table, exp2.order.beta, exp2.order.ci)
-
-```
-Infants' looking preferences at test did not vary depending on which sequence of events (low to high danger vs high to low danger) they were randomly assigned to watch in the first familiarization trial (Experiment 1: `r report(exp1.ordereffects,4,3,2)`; Experiment 2: `r report(exp2.ordereffects,4,3,2)`). All infants saw 3 familiarization trials in each order.
-
+Infants' looking preferences at test did not vary depending on which sequence of events (low to high danger vs high to low danger) they were randomly assigned to watch in the first familiarization trial (`r report(exp1.ordereffects,4,3,2)`). All infants saw 3 familiarization trials in each order.
 
 ## Power analysis over experiment 1
 ```{r exp1.power, eval=FALSE}
@@ -1111,14 +916,6 @@ Infants' looking preferences at test did not vary depending on which sequence of
 
 ```
 
-## Power analysis over experiment 3
-```{r exp3.power, eval=FALSE}
-# sim2 <- powerCurve(extend(exp3.1, along="subj", n=500),
-#                        along="subj", breaks = c(36, 40, 44, 48, 52, 56, 60, 64, 68), alpha = .05, seed = 123)
-# plot(sim2)
-# print(sim2)
-
-```
 
 ## Generate Data for Reliability
 ```{r generate.rel, eval=FALSE}
@@ -1128,20 +925,6 @@ Infants' looking preferences at test did not vary depending on which sequence of
 #   mutate(trialn = str_remove(trial, "test")) %>%
 #   group_by(subj, trialn)
 # write.csv(reliability, "risk_rel.csv")
-```
-
-
-
-# Bayes Factors
-```{r}
-library(bayestestR)
-
-## no effect vs effect
-bayesfactor_models(exp1.0, exp1.1, denominator = exp1.0) # Exp 1
-bayesfactor_models(exp2.0, exp2.1, denominator = exp2.0) # Exp 2
-bayesfactor_models(exp3a.0, exp3a.1, denominator = exp3a.0) # Exp 3 10mo
-bayesfactor_models(exp3b.0, exp3b.1, denominator = exp3b.0) # Exp 3 13mo
-bayesfactor_models(exp3.0, exp3.1, denominator = exp3.0) # Exp 3 13mo
 ```
 
 
