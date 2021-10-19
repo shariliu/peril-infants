@@ -8,8 +8,8 @@ if(!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
 looks.on.group <- NA
 
 # get all data files from the dir
-datafiles <- list.files(".", pattern=".csv", recursive=FALSE, ignore.case = TRUE)
-
+datafiles <- list.files("./exp1_fam_csvs", pattern=".csv", recursive=FALSE, ignore.case = TRUE)
+setwd("./exp1_fam_csvs/")
 # read out durations per videoclip per trial per subject
 for (i in 1:length(datafiles)) {
     curfile <- datafiles[i]
@@ -87,7 +87,8 @@ for (i in 1:length(datafiles)) {
              duration = (offset-onset)/1000) %>%
       group_by(subjID,trial,videoclip) %>%
       mutate(duration.on = sum(duration[event=="videoclip"]-sum(duration[event=="off"]))) %>%
-      distinct(duration.on) %>%
+      mutate(proportion.on = 1-(sum(duration[event=="off"])/sum(duration[event=="videoclip"]))) %>%
+      distinct(duration.on, proportion.on) %>%
       as.data.frame()
     
     # add to group data
@@ -101,4 +102,3 @@ looks.on.group %>%
   filter(trial != "intro") %>% # remove looks to trench fam
   filter(!str_detect(videoclip, "\\*")) %>% # remove all videos where infant didn't see the agent accept or refuse
   write.csv("exp1_fam_looks.csv") # write to csv
-

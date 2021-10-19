@@ -34,3 +34,5 @@ wesanderson
 patchwork
 janitor
 dplyr
+sjPlot
+corrplot
