@@ -911,7 +911,18 @@ Infants' looking preferences at test did not vary depending on which sequence of
 ## Differences in attention for 4 familiarization movies, Exp 1
 
 ```{r}
-
+# 
+# 
+# looks.on.crosstrial <- merge(videoclip, off, all=TRUE) %>%
+#   mutate(
+#     #  file = filename,
+#     subjID = subjID,
+#     # study = study,
+#     # condition = condition,
+#     duration = (offset-onset)/1000) %>%
+#   group_by(subjID,videoclip) %>%
+#   mutate(duration.on = sum(duration[event=="videoclip"]-sum(duration[event=="off"]))) %>%
+#   distinct(duration.on)
 ```
 
 <!-- ## Power analysis over experiment 1 -->
