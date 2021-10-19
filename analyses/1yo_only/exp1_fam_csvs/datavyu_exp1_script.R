@@ -1,13 +1,16 @@
-# Generate looking duration to each fam video clip, Exp 1
+# Generate looking duration to each fam video clip from csvs exported from Datavyu, Exp 1
 # Shari Liu
 
 if(!require("tidyverse")) {install.packages("tidyverse"); require("tidyverse")}
 if(!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
 
-#
+# init blank data frame
 looks.on.group <- NA
-datafiles <- list.files(".", pattern=".csv", recursive=TRUE, ignore.case = TRUE)
+setwd("./exp1_fam_csvs/")
+# get all data files from the dir
+datafiles <- list.files(".", pattern=".csv", recursive=FALSE, ignore.case = TRUE)
 
+# read out durations per videoclip per trial per subject
 for (i in 1:length(datafiles)) {
     curfile <- datafiles[i]
     subjID <- str_remove(curfile, ".csv")
@@ -17,7 +20,7 @@ for (i in 1:length(datafiles)) {
 
     # there might be ways to condense this, but here's what I've got that works!
     
-    # make 3 new tibbles: one for looks away, and one for total trial length
+    # make 3 new tibbles: one for looks away, one for videoclips, and one for trials
     off <- data %>%
       select(off.onset, 
              off.offset, 
@@ -49,7 +52,8 @@ for (i in 1:length(datafiles)) {
       na.omit() %>%
       mutate(event = 'videoclip', trial=NA) 
     
-    # calculate looking times within each event
+    # calculate looking times within each video clip
+    
     # first, figure out which off-looks go with which movies
     for (i in 1:nrow(off)) {
       for (j in 1:nrow(videoclip)) {
@@ -80,34 +84,20 @@ for (i in 1:length(datafiles)) {
     looks.on <- merge(videoclip, off, all=TRUE) %>%
       mutate(
              subjID = subjID,
-             # subjID = subjID,
-             # study = study,
-             # condition = condition,
              duration = (offset-onset)/1000) %>%
       group_by(subjID,trial,videoclip) %>%
       mutate(duration.on = sum(duration[event=="videoclip"]-sum(duration[event=="off"]))) %>%
       distinct(duration.on) %>%
       as.data.frame()
     
+    # add to group data
     looks.on.group <- rbind(looks.on.group, looks.on)
-
 }
 
 looks.on.group %>% 
-  mutate(trial = str_replace_all(trial, "[[:punct:]]", "")) %>%
+  mutate(trial = str_replace_all(trial, "[[:punct:]]", "")) %>% # remove trial annotation that is irrelevant for this analysis
   na.omit() %>%
-  filter(trial != "intro") %>%
-  filter(!str_detect(videoclip, "\\*")) %>%
-  write.csv("exp1_fam_looks.csv")
-# 
-# 
-# looks.on.crosstrial <- merge(videoclip, off, all=TRUE) %>%
-#   mutate(
-#     #  file = filename,
-#     subjID = subjID,
-#     # study = study,
-#     # condition = condition,
-#     duration = (offset-onset)/1000) %>%
-#   group_by(subjID,videoclip) %>%
-#   mutate(duration.on = sum(duration[event=="videoclip"]-sum(duration[event=="off"]))) %>%
-#   distinct(duration.on)
+  filter(trial != "intro") %>% # remove looks to trench fam
+  filter(!str_detect(videoclip, "\\*")) %>% # remove all videos where infant didn't see the agent accept or refuse
+  write.csv("exp1_fam_looks.csv") # write to csv
+

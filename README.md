@@ -1,10 +1,5 @@
-# Sensitivity to risk in infants' intuitive psychology
+# Dangerous ground: One-year-old infants are sensitive to peril in other people’s actions
 
-## Overview
+This README file contains the data and analyses required to reproduce the above paper (currently under revision). In this revision, we have decided to split the data from two age groups, 10mo infants, and infants 1y of age and older, and report them in two separate manuscripts.
 
-Infants assume that agents plan over variables like physical effort and reward (Liu et al., 2017). This research asks whether infants consider the perils agents plan over as well. Here, peril is defined as degree of danger, or the magnitude of a negative state that an agent might encounter (falling down a cliff).
-
-In one set of experiments, we ask whether infants expect agents to minimize the peril of their actions, all else being equal. We do this by showing infants an agent choosing a more vs less dangerous action for the same reward, and vice versa, and measuring their looking times to assess their expectations.  
-
-In another set of experiments, we ask whether infants infer the value of a goal from the amount of danger an agent withstood in pursuing it.
-
+The manuscript reporting the results from 1yo infants is the current paper under revision, and the data/analyses from that paper are found in the path `analyses/1yo_only/`. In this path, there is a subfolder called `exp1_fam_csvs`. That folder contains the data and scripts for a supplemental analysis reported in the paper.
