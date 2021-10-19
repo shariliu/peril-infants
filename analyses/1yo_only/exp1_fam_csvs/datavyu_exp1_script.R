@@ -6,7 +6,7 @@ if(!require("dplyr")) {install.packages("dplyr"); require("dplyr")}
 
 # init blank data frame
 looks.on.group <- NA
-setwd("./exp1_fam_csvs/")
+
 # get all data files from the dir
 datafiles <- list.files(".", pattern=".csv", recursive=FALSE, ignore.case = TRUE)
 
@@ -96,6 +96,7 @@ for (i in 1:length(datafiles)) {
 
 looks.on.group %>% 
   mutate(trial = str_replace_all(trial, "[[:punct:]]", "")) %>% # remove trial annotation that is irrelevant for this analysis
+  mutate(videoclip = str_replace_all(videoclip, " ", "_")) %>%
   na.omit() %>%
   filter(trial != "intro") %>% # remove looks to trench fam
   filter(!str_detect(videoclip, "\\*")) %>% # remove all videos where infant didn't see the agent accept or refuse
