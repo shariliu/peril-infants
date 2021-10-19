@@ -911,19 +911,69 @@ Infants' looking preferences at test did not vary depending on which sequence of
 ## Differences in attention for 4 familiarization movies, Exp 1
 
 ```{r}
-# 
-# 
-# looks.on.crosstrial <- merge(videoclip, off, all=TRUE) %>%
-#   mutate(
-#     #  file = filename,
-#     subjID = subjID,
-#     # study = study,
-#     # condition = condition,
-#     duration = (offset-onset)/1000) %>%
-#   group_by(subjID,videoclip) %>%
-#   mutate(duration.on = sum(duration[event=="videoclip"]-sum(duration[event=="off"]))) %>%
-#   distinct(duration.on)
+exp1.fam <- read.csv("./exp1_fam_csvs/exp1_fam_looks.csv", header=TRUE)
+
+exp1.fam <- exp1.fam %>%
+  separate(videoclip, into = c("depth", "yesno"), remove=FALSE) %>%
+  rename(subj= subjID)
+
+exp1.fam$depth <- as.factor(exp1.fam$depth)
+exp1.fam$yesno <- as.factor(exp1.fam$yesno)
+exp1.fam$trial <- as.factor(exp1.fam$trial)
+exp1.fam$subj <- as.factor(exp1.fam$subj)
+exp1.fam$videoclip <- as.factor(exp1.fam$videoclip)
+
+exp1.fam.bytrial <- exp1.fam
+
+# compute 4 values per subject, total looking to
+# deep_no, medium_yes, medium_no, shallow_yes
+exp1.fam.bymovie <- exp1.fam %>%
+   group_by(subj,videoclip, depth, yesno) %>%
+  mutate(total.lt = sum(duration.on)) %>%
+  distinct(total.lt)
+
 ```
+
+```{r}
+theme_set(theme_cowplot(font_size=20))
+
+exp1.fam.bymovie %>%
+  ggplot(aes(yesno, total.lt, fill=depth)) + 
+  geom_boxplot() +
+  geom_point() +
+  # geom_line(alpha = 0.2, aes(group = subjID)) +
+  ylab("Looking time (s)") +
+  xlab("Accept (yes) or Refuse (no)") +
+  facet_wrap(~depth) + 
+  stat_summary(fun.y = mean, geom = "point", shape=3, size=4, position = "dodge", colour = "black")
+```
+
+```{r}
+
+fam1 <- lmer(data = exp1.fam.bymovie,
+               formula = total.lt ~ depth + (1|subj))
+summary(fam1)
+
+```
+
+```{r}
+exp1.fam.bymovie.wide <- exp1.fam.bymovie %>%
+  pivot_wider(names_from = videoclip, values_from = total.lt, id=subj)
+
+exp1.avg.diff <- exp1.avg %>%
+  filter(phase == "testavg") %>%
+  pivot_wider(names_from = type, values_from = look, id=subj) %>%
+  mutate(delta.look = lower-higher)
+
+exp1.famtest <- full_join(exp1.fam.bymovie.wide, exp1.avg.diff, by=c("subj"))
+
+fam2 <- lm(data = exp1.famtest,
+             formula = delta.look ~ shallow_yes + medium_no + medium_yes + deep_no)
+
+summary(fam2)
+plot(allEffects(fam2))
+```
+
 
 <!-- ## Power analysis over experiment 1 -->
 ```{r exp1.power, eval=FALSE}
