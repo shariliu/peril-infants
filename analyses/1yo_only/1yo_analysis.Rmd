@@ -890,8 +890,6 @@ Infants looked longer at test when the agent, at test, chose the deeper trench o
 Infants looked longer at test when the agent, at test, chose the deeper trench over the shallower trench (`r report(exp3.everyone.test.results, 2, 3, 1)`, excluding one influential participant. During control events, infants did not show a strong preference for either event (`r report(exp3.everyone.pre.results,2,3,2)`). Their looking preferences significantly differed across the two phases of the experiment, `r report(exp3.everyone.prevstest.results,4,3,2)`). This fully replicates the two key findings from Experiment 2: longer looking at test towards the action over the deep trench, and a different pattern of looking than to control events.
 
 ## Order effects in Experiment 1 (reviewer suggestion)
-
-### Experiment 1
 ```{r order.exp1}
 
 exp1.order <- lmer(data = exp1.avg,
@@ -909,6 +907,12 @@ exp1.ordereffects <- cbind(exp1.order.table, exp1.order.beta, exp1.order.ci)
 ```
 
 Infants' looking preferences at test did not vary depending on which sequence of events (low to high danger vs high to low danger) they were randomly assigned to watch in the first familiarization trial (`r report(exp1.ordereffects,4,3,2)`). All infants saw 3 familiarization trials in each order.
+
+## Differences in attention for 4 familiarization movies, Exp 1
+
+```{r}
+
+```
 
 <!-- ## Power analysis over experiment 1 -->
 ```{r exp1.power, eval=FALSE}
