@@ -20,18 +20,15 @@ ipak <- function (pkg) {
   sapply(pkg, require, character.only = TRUE)
 }
 
-# devtools::install_github("mhtess/rwebppl")
+packages <- c("multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "wesanderson", "patchwork", "janitor", "sjPlot", "corrplot", "dplyr", "tidyverse")
 
-packages <- c("tidyverse", "Hmisc", "lattice", "multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "plyr", "dplyr", "HLMdiag", "wesanderson", "patchwork", "janitor", "sjPlot", "corrplot")
 ipak(packages)
-
-detach("package:dplyr", unload = TRUE)
-library(dplyr)
-
 
 ```
 
 ```{r prep.data}
+detach("package:dplyr", unload = TRUE)
+library(dplyr)
 
 # read in data
 wide <- read.csv(file = "peril_data_deid.csv", header = TRUE) 
@@ -341,15 +338,13 @@ nexclude <- wide %>%
   rename(n_missing = n) %>%
   select(!missing)
 
-# TODO double check this - seems like too small a number
-
 totaltrials <- wide %>%
    gather(type, look, control_1:test4) %>%
    filter(cost=="Risk",
           !is.na(experiment)) %>%
    group_by(exp) %>%
    tally() %>%
-   dplyr::rename(total = n)
+   rename(total = n)
 
 ntrials <- full_join(nexclude, totaltrials)
 ```
@@ -376,7 +371,6 @@ lognormal.ll <- fitdistr(na.omit(risk.avg$look), "lognormal")$loglik
 ```
 
 # Figures
-
 ```{r fig.exp1, include=TRUE, fig.width=4}
 
 theme_set(theme_cowplot(font_size=20))
@@ -950,23 +944,36 @@ exp1.famtest.long <- exp1.famtest %>%
 ```
 
 ```{r}
-theme_set(theme_cowplot(font_size=20))
+theme_set(theme_cowplot(font_size=15))
 
-figS3 <- exp1.fam.bymovie %>%
-  ggplot(aes(videoclip, proportion.on.total, fill=depth)) + 
+
+figS3.individual <- exp1.fam.bytrial %>%
+  ggplot(aes(videoclip, proportion.on, fill=depth)) + 
   geom_boxplot() +
-  geom_point() +
+  geom_point(alpha=0.3) +
   # geom_line(alpha = 0.2, aes(group = subjID)) +
   ylab("Proportion of looking relative \n to length of video clip") +
   xlab("Video clip") +
   # facet_wrap(~depth) + 
-  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.1)+
-    stat_summary(fun=mean,geom="point",shape=5)+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.2)+
+    stat_summary(fun=mean,geom="point",shape=5, size=3)+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), legend.position = "none") +
+    ggtitle('All video clips')
 
-figS3
+figS3.avg <- exp1.fam.bymovie %>%
+  ggplot(aes(videoclip, proportion.on.total, fill=depth)) + 
+  geom_boxplot() +
+  geom_point(alpha = 0.3) +
+  # geom_line(alpha = 0.2, aes(group = subjID)) +
+  # facet_wrap(~depth) + 
+  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.2)+
+    stat_summary(fun=mean,geom="point",shape=5, size=3)+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), axis.title.x=element_blank(), axis.title.y=element_blank()) +
+    ggtitle('Averaged within subjects')
+
+
+(figS3.individual + figS3.avg) + plot_annotation(tag_levels = 'A')
 ```
 
-*Figure S3.*  Average proportion of time that infants looked towards the screen during each familiarization video clip, relative to the duration of each clip, for a random subset of infants in Experiment 1 (N=16 out of 32 total infants). Error bars represent bootstrapped 95% confidence intervals around the mean.
+*Figure S3.* Proportion of time that infants looked towards the screen during each familiarization video clip, relative to the duration of each clip, (A) over all clips, or (B) averaged within subjects. Data came from a random subset of infants in Experiment 1 (N=16 out of 32 total infants). Error bars represent bootstrapped 95% confidence intervals around the mean.
 
 ```{r}
 theme_set(theme_cowplot(font_size=15))
