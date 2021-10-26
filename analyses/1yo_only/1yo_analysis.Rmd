@@ -1,7 +1,7 @@
 ---
 title: "Dangerous ground: One-year-old infants are sensitive to peril in other people’s actions "
 author: "Shari Liu"
-date: "October 12, 2021"
+date: "October 25, 2021"
 output:
   html_document: default
 editor_options: 
@@ -917,8 +917,52 @@ exp1.fam$trial <- as.factor(exp1.fam$trial)
 exp1.fam$subj <- as.factor(exp1.fam$subj)
 exp1.fam$videoclip <- as.factor(exp1.fam$videoclip)
 
-exp1.fam.bytrial <- exp1.fam
+exp1.fam.glancedoff <- exp1.fam %>%
+  mutate(glanced.off = case_when(proportion.on == 1.0 ~ 0,
+                                proportion.on < 1.0 ~ 1))
 
+exp1.fam.glancedoff.totalclips <- exp1.fam.glancedoff %>%
+  select(subj, depth, videoclip, glanced.off) %>%
+  group_by(subj, videoclip) %>%
+  summarise(totalclips = n()) 
+
+exp1.fam.glancedoff.freq <- exp1.fam.glancedoff %>%
+  select(subj, depth, videoclip, glanced.off) %>%
+  group_by(subj, videoclip) %>%
+  tally(glanced.off)
+
+exp1.fam.glanced.off.summary <- full_join(exp1.fam.glancedoff.totalclips, exp1.fam.glancedoff.freq) %>%
+  mutate(prop.glancedoff = n/totalclips) %>%
+  mutate(depth = case_when(videoclip == "deep_no" ~ "deep",
+                           videoclip == "shallow_yes" ~ "shallow",
+                           videoclip == "medium_no" ~ "medium",
+                           videoclip == "medium_yes" ~ "medium"))
+
+exp1.fam.glanced.off.summary$videoclip <- factor(exp1.fam.glanced.off.summary$videoclip, levels=c("shallow_yes", "medium_no", "medium_yes", "deep_no"))
+```
+
+```{r}
+
+figS4.individual <- exp1.fam.glanced.off.summary %>%
+  ggplot(aes(videoclip, prop.glancedoff, fill=depth)) + 
+  geom_boxplot() +
+  geom_point(alpha=0.3) +
+  geom_line(alpha = 0.2, aes(group = subj)) +
+  ylab("Proportion of events including look away") +
+  xlab("Event type") +
+  # facet_wrap(~depth) + 
+  stat_summary(fun.data =mean_cl_boot, geom="errorbar",width=0.2)+
+    stat_summary(fun=mean,geom="point",shape=5, size=3)+ theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+figS4.individual
+```
+
+```{r}
+
+```
+
+
+```{r}
 # compute 4 values per subject, total proportion to
 # deep_no, medium_yes, medium_no, shallow_yes
 exp1.fam.bymovie <- exp1.fam %>%
@@ -934,12 +978,19 @@ exp1.avg.diff <- exp1.avg %>%
   pivot_wider(names_from = type, values_from = look, id=subj) %>%
   mutate(delta.look = lower-higher)
 
+exp1.fam.glancedoff.wide <- exp1.fam.glanced.off.summary %>%
+  pivot_wider(names_from = videoclip, values_from = prop.glancedoff, id=subj)
+
 exp1.famtest <- full_join(exp1.fam.bymovie.wide, exp1.avg.diff, by=c("subj")) %>% 
   na.omit()
-
-
 exp1.famtest.long <- exp1.famtest %>%
   gather(key = "movie_clip", value = "proportion_looking", shallow_yes:deep_no)
+
+exp1.famtest.glanceoff <- full_join(exp1.fam.glancedoff.wide, exp1.avg.diff, by=c("subj")) %>% 
+  na.omit()
+
+exp1.famtest.glanceofflong <- exp1.famtest.glanceoff %>%
+  gather(key = "movie_clip", value = "proportion_glanced_off", shallow_yes:deep_no)
 
 ```
 
@@ -996,7 +1047,7 @@ figS4A
 
 
 ```{r}
-cor.data <- exp1.famtest %>%
+cor.data <- exp1.famtest.glanceoff %>%
   select(shallow_yes:deep_no, delta.look) %>%
   rename(VOE_response = delta.look) %>%
   as.data.frame() 
@@ -1004,13 +1055,31 @@ cor.data <- exp1.famtest %>%
 
 corrplot(cor(cor.data[,-1]),
          method='circle',
-         order='hclust',
-         type='upper',
+         type='lower',
          addCoef.col ='black',
          diag=FALSE)
 ```
 
-*Figure S4.* Correlation plot relating infants' attention to each of the 4 video clips from familiarization to each other, and to infants' violation of expectation response (unexpected - expected) at test. Values indicate Pearson's correlations.
+*Figure S4.* Correlation plot relating infants' lookaway behavior for each event type (proportion of events that infants glanced away from), to each other, and to infants' violation of expectation response (unexpected - expected) at test. Values indicate Pearson's correlations.
+
+
+```{r}
+fam.glance1 <- lmer(data = exp1.fam.glanced.off.summary,
+               formula = prop.glancedoff ~ videoclip + (1|subj))
+summary(fam.glance1)
+tab_model(fam.glance1)
+plot(allEffects(fam.glance1))
+```
+
+```{r}
+
+fam.glance2 <- lm(data = exp1.famtest.glanceoff,
+             formula = scale(delta.look) ~ scale(shallow_yes) + scale(medium_no) + scale(medium_yes) + scale(deep_no))
+tab_model(fam.glance2)
+summary(fam.glance2)
+plot(allEffects(fam.glance2))
+```
+
 
 ```{r}
 
