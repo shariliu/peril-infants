@@ -10,6 +10,7 @@ looks.on.group <- NA
 # get all data files from the dir
 datafiles <- list.files("./exp1_fam_csvs", pattern=".csv", recursive=FALSE, ignore.case = TRUE)
 setwd("./exp1_fam_csvs/")
+
 # read out durations per videoclip per trial per subject
 for (i in 1:length(datafiles)) {
     curfile <- datafiles[i]
