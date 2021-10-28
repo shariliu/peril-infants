@@ -20,7 +20,7 @@ ipak <- function (pkg) {
   sapply(pkg, require, character.only = TRUE)
 }
 
-packages <- c("multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "wesanderson", "patchwork", "janitor", "sjPlot", "corrplot", "dplyr", "tidyverse")
+packages <- c("multcomp", "lsmeans", "schoRsch", "influence.ME", "lme4", "effects", "lmerTest", "cowplot", "irr", "simr", "wesanderson", "patchwork", "janitor", "sjPlot", "corrplot", "dplyr", "tidyverse", "EMAtools")
 
 ipak(packages)
 
@@ -111,6 +111,12 @@ gen.m <- function(model) {
   return(df)
 }
 
+# function that returns column of standardized betas from lmer model
+gen.beta <- function(model) {
+  f <- data.frame(fixef(model))
+  colnames(f) <- "beta"
+  return(f)
+}
 # function that returns age info and number of females in a dataset, assuming 2 rows of data per subj
 info <- function(longdata) {
   longdata %>% summarize(mean = mean(agem), min=range(agem)[1], max=range(agem)[2], f=sum(sex=="f")/2, n=length(unique(subj)))
@@ -262,34 +268,6 @@ reporticc <- function(output, places) {
   return(statistic)
 }
 
-# function that returns column of standardized betas from lmer model
-gen.beta <- function(model) {
-  f <- data.frame(fixef(model))
-  colnames(f) <- "beta"
-  return(f)
-}
-
-# function that computes CIs and returns them in df
-gen.ci <- function(model) {
-  df <- data.frame(confint(model))
-  names(df) <- c("lower", "upper")
-  return(df)
-}
-
-# function that converts model summary (lmer) to df
-gen.m <- function(model) {
-  df <- data.frame(coef(summary(model)))
-  names(df) <- c("est", "se", "df", "t", "p")
-  return(df)
-}
-
-# function that converts model summary (lm) to df
-gen.lm <- function(model) {
-  df <- data.frame(coef(summary(model)))
-  names(df) <- c("est", "se", "t", "p")
-  return(df)
-}
-
 # function that returns APA-formatted result from lme4/lmerTest table
 report <- function(table, index, places, tails, flip) {
   if (tails == "1") {
@@ -311,13 +289,15 @@ report <- function(table, index, places, tails, flip) {
   }
   return(result)
 }
+
+
 ```
 
 ```{r summary}
 ## get within-subjects CIs for plotting
 
 # warning about Nan has to do with missing observations for control events
-summary.avg <- summarySEwithin(data = risk.avg, measurevar = "look", betweenvars = c("exp", "phase"), withinvars = "type", idvar = "subj") %>%
+summary.avg <- summarySEwithin(data = risk.avg, measurevar = "look", betweenvars = c("exp"), withinvars = c("type", "phase"), idvar = "subj") %>%
   drop_na() %>%  
   mutate(cliff = type)
 levels(summary.avg$cliff) <- c("deep", "deep", "shallow", "shallow")
@@ -476,17 +456,22 @@ plot(influence(exp1.1, "subj"), which="cook",
      ylab="Subject ID")
 
 exp1.1.cooks <- lmer(loglook ~ type + (1|subj),
-               data = exp1.avg %>% filter(subj != "S4_12"))
+               data = exp1.avg %>% filter(subj != "S4_13"))
 
-exp1.1.table <- gen.m(exp1.1)
-exp1.1.ci <- gen.ci(exp1.1)[3:4,]
+exp1.1.table <- gen.m(exp1.1.cooks)
+exp1.1.ci <- gen.ci(exp1.1.cooks)[3:4,]
 
 exp1.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp1.avg)
+               data = exp1.avg %>% filter(subj != "S4_13"))
 exp1.1.betas <- gen.beta(exp1.1.beta)
 
 exp1.results <- cbind(exp1.1.table, exp1.1.betas,exp1.1.ci)
 
+
+# effect size
+exp1.cohensd <- lme.dscore(exp1.1.cooks,
+           data = exp1.avg %>% filter(subj != "S4_13"),
+           type = "lme4") %>% select(d) %>% as.numeric()
 
 ```
 
@@ -504,7 +489,7 @@ Infant looking times are often log-normally distributed (Csibra, Hernik, Mascaro
 
 ## Results
 ### Pre-registered results.
-We compared infants’ looking times when the agent approached the target for which it performed the more dangerous action (Higher Value) to the looking times when the agent approached the other target (Lower Value). Thirteen-month-old infants looked longer when the agent chose the target achieved through the less dangerous action (Mlower=`r summary.avg$look[2]`s, Mhigher=`r summary.avg$look[1]`s, pooled standard error (SE)=`r summary.avg$se[1]`), 95% confidence interval (CI) over difference in log seconds `r report(exp1.results,2,3,2)` excluding one influential participant). This finding is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action, and they looked longer when this expected outcome did not occur.
+We compared infants’ looking times when the agent approached the target for which it performed the more dangerous action (Higher Value) to the looking times when the agent approached the other target (Lower Value). Thirteen-month-old infants looked longer when the agent chose the target achieved through the less dangerous action (Mlower=`r summary.avg$look[2]`s, Mhigher=`r summary.avg$look[1]`s, pooled standard error (SE)=`r summary.avg$se[1]`), 95% confidence interval (CI) over difference in log seconds `r report(exp1.results,2,3,2)`, Cohen's d=`r exp1.cohensd`, excluding one influential participant). This finding is consistent with the interpretation that infants expected the agent to choose the target for which it had undertaken a more dangerous action, and they looked longer when this expected outcome did not occur.
 
 # Experiment 2: Minimizing Risk
 ```{r exp2.primary}
@@ -536,6 +521,11 @@ exp2.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
 exp2.1.betas <- gen.beta(exp2.1.beta)
 
 exp2.results <- cbind(exp2.1.table, exp2.1.betas, exp2.1.ci)
+
+# effect size
+exp2.cohensd <- lme.dscore(exp2.1.cooks,
+           data = exp2.test %>% filter(subj != "24-MR"),
+           type = "lme4") %>% select(d) %>% as.numeric() 
 ```
 
 ```{r exp2.pre}
@@ -562,6 +552,11 @@ exp2.beta <- lmer(scale(loglook) ~ type + (1|subj),
 exp2.betas <- gen.beta(exp2.beta)
 
 exp2.results2 <- cbind(exp2.table, exp2.betas, exp2.ci)
+
+# effect size
+exp2.control.cohensd <- lme.dscore(exp2.cooks,
+           data = exp2.control %>% filter(subj != "59-MR" & subj != "54-MR"),
+           type = "lme4") %>% select(d) %>% as.numeric()
 ```
 
 ```{r exp2.pre.vs.test}
@@ -579,10 +574,7 @@ plot(influence(exp2.3, "subj"), which="cook",
      cutoff=4/30, sort=TRUE,
      xlab="Cook´s Distance",
      ylab="Subject ID")
-# 1 influential observation
-
-exp2.3.cooks <- lmer(loglook ~ cliff * phase + (1|subj),
-                     data = exp2.control.test)
+# no influential observations
 
 exp2.3.table <- gen.m(exp2.3)
 exp2.3.ci <- gen.ci(exp2.3)[3:6,]
@@ -592,6 +584,11 @@ exp2.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
 exp2.3.betas <- gen.beta(exp2.3.beta)
 
 exp2.results3 <- cbind(exp2.3.table,exp2.3.betas,exp2.3.ci)
+
+# effect size
+exp2.interaction.cohensd <- lme.dscore(exp2.3,
+           data = exp2.control.test,
+           type = "lme4") %>% slice(3) %>% select(d) %>% as.numeric()
 ```
 
 ## Methods
@@ -604,12 +601,11 @@ The data coding and analysis strategy for Experiment 3 were identical to those o
 ## Results
 Important note: In this paper, we report the results of a study originally pre-registered with a sample including both 10-month-old and 13-month-old infants. Because our investigation with 10-month-old infants is still ongoing, we deviate from our pre-registration by reporting only results from the older age group. Data from both age groups are open access at https://osf.io/kz7br/. 
 
-Thirteen-month-old infants looked longer at test when the agent, at test, chose to cross the deeper trench over the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, pooled SE=`r summary.avg$se[6]`, `r report(exp2.results,2,3,1)`, excluding one influential participant). See Figure 4A.
+Thirteen-month-old infants looked longer at test when the agent, at test, chose to cross the deeper trench over the shallower trench (Mdeep=`r summary.avg$look[5]`s, Mshallow=`r summary.avg$look[6]`s, pooled SE=`r summary.avg$se[6]`, `r report(exp2.results,2,3,1)`, d=`r exp2.cohensd`, excluding one influential participant). See Figure 4A.
 
- To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. During control events, 13-month-old infants preferred to look at events near the shallow trench (Mdeep=`r summary.avg$look[3]`s (SE=`r summary.avg$se[3]`), Mshallow=`r summary.avg$look[4]`s (SE=`r summary.avg$se[4]`), `r report(exp2.results2,2,3,2)`, excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp2.results3,4,3,2)`). See Figure 4A.
+To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. During control events, 13-month-old infants preferred to look at events near the shallow trench (Mdeep=`r summary.avg$look[3]`s (SE=`r summary.avg$se[3]`), Mshallow=`r summary.avg$look[4]`s (SE=`r summary.avg$se[4]`), `r report(exp2.results2,2,3,2)`, d=`r exp2.control.cohensd`,excluding 2 influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp2.results3,4,3,2)`, d=`r exp2.interaction.cohensd`, no influential observations). See Figure 4A.
 
 # Experiment 3: Minimizing risk replication (no shattering)
-
 
 ```{r exp3.test}
 
@@ -617,15 +613,15 @@ exp3.control.test <- exp3.avg %>%
   mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
                            type=="shallow" | type =="lower" ~ "shallow"))
 
-exp3.avg <- exp3.avg %>% filter(phase=="testavg") 
+exp3.avg.test <- exp3.avg %>% filter(phase=="testavg") 
 
 exp3.info <- info(exp3.avg)
 
 exp3.0 <- lmer(loglook ~ 1 + (1|subj),
-               data = exp3.avg)
+               data = exp3.avg.test)
 
 exp3.1 <- lmer(loglook ~ type + (1|subj),
-               data = exp3.avg)
+               data = exp3.avg.test)
 
 # id influential observations
 plot(influence(exp3.1, "subj"), which="cook",
@@ -638,10 +634,15 @@ exp3.1.table <- gen.m(exp3.1)
 exp3.1.ci <- gen.ci(exp3.1)[3:4,]
 
 exp3.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
-               data = exp3.avg)
+               data = exp3.avg.test)
 exp3.1.betas <- gen.beta(exp3.1.beta)
 
 exp3.results <- cbind(exp3.1.table, exp3.1.betas, exp3.1.ci)
+
+# effect size
+exp3.cohensd <- lme.dscore(exp3.1,
+           data = exp3.avg.test,
+           type = "lme4") %>% select(d) %>% as.numeric()
 ```
 
 ```{r exp3.pre}
@@ -668,6 +669,11 @@ exp3.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
 exp3.2.betas <- gen.beta(exp3.2.cooks)
 
 exp3.results2 <- cbind(exp3.2.table, exp3.2.betas, exp3.2.ci)
+
+# effect size
+exp3.control.cohensd <- lme.dscore(exp3.2.cooks,
+           data = exp3.control %>% filter(subj != "26" & subj != "28"),
+           type = "lme4") %>% select(d) %>% as.numeric()
 ```
 
 
@@ -696,6 +702,11 @@ exp3.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
 exp3.3.betas <- gen.beta(exp3.3.beta)
 
 exp3.results3 <- cbind(exp3.3.table,exp3.3.betas,exp3.3.ci)
+
+# effect size
+exp3.interaction.cohensd <- lme.dscore(exp3.3.cooks,
+           data = exp3.control.test %>% filter(subj != "28"),
+           type = "lme4") %>% slice(3) %>% select(d) %>% as.numeric()
 ```
 
 ```{r pairwise}
@@ -755,10 +766,10 @@ The data coding and analysis strategy for Experiment 3 were identical to those f
 
 ## Results
 ### Pre-registered results
-We fully replicated the two key results from Experiment 2. First, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[9]`s, Mshallow=`r summary.avg$look[10]`s, pooled SE=`r summary.avg$se[10]`, `r report(exp3.results,2,3,1, flip)`, no influential participants). Second, infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3, 4, 2, 3)`, excluding 1 inlufential participant). 
+We fully replicated the two key results from Experiment 2. First, infants looked longer at test when the agent chose to jump the deeper trench than when the agent chose to jump the shallower trench (Mdeep=`r summary.avg$look[9]`s, Mshallow=`r summary.avg$look[10]`s, pooled SE=`r summary.avg$se[10]`, `r report(exp3.results,2,3,1, flip)`, d=`r exp3.cohensd`, no influential participants). Second, infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp3.results3, 4, 2, 3)`, d=`r exp3.interaction.cohensd`, excluding 1 inlufential participant). 
 
 ### Exploratory results
-During the control events, infants showed a numerical but non-significant preference for the shallower trench in this context (Mdeep=`r summary.avg$look[7]`s, Mshallow=`r summary.avg$look[8]`s, pooled SE=`r summary.avg$se[8]`, `r report(exp3.results2, 2, 3, 2)`, excluding 2 influential participants). See Figure 4A.
+During the control events, infants showed a numerical but non-significant preference for the shallower trench in this context (Mdeep=`r summary.avg$look[7]`s, Mshallow=`r summary.avg$look[8]`s, pooled SE=`r summary.avg$se[8]`, `r report(exp3.results2, 2, 3, 2)`, d=`r exp3.control.cohensd`, excluding 2 influential participants). See Figure 4A.
 
 # Supplemental Online Materials
 
