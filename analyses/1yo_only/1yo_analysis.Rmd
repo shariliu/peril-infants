@@ -1080,7 +1080,6 @@ summary(fam.glance2)
 plot(allEffects(fam.glance2))
 ```
 
-
 ```{r}
 
 fam1 <- lmer(data = exp1.fam.bymovie,
