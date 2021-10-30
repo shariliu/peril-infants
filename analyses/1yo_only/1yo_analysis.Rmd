@@ -298,9 +298,9 @@ report2 <- function(table, index, places, tails, flip) {
     p <- paste("=", str_remove(p.value, "^0+"), sep = "") 
   }
   if (missing(flip)) {
-    result <- paste("[", round(table$lower[index], places), ",", round(table$upper[index], places), "], ß=", round(table$beta[index], places), ", t(", round(table$df[index],1), ")=", round(table$t[index], places), ", p", p, ", ", howmanytails, sep = "")
+    result <- paste("[", round(table$lower[index], places), ",", round(table$upper[index], places), "], ß=", round(table$beta[index], places), ", t(", round(table$df[index],2), ")=", round(table$t[index], places), ", p", p, ", ", howmanytails, sep = "")
   } else {
-    result <- paste("[", -round(table$upper[index], places), ",", -round(table$lower[index], places), "], ß=", -round(table$beta[index], places), ", t(", round(table$df[index],1), ")=", -round(table$t[index], places), ", p", p, ", ", howmanytails, sep = "")
+    result <- paste("[", -round(table$upper[index], places), ",", -round(table$lower[index], places), "], ß=", -round(table$beta[index], places), ", t(", round(table$df[index],2), ")=", -round(table$t[index], places), ", p", p, ", ", howmanytails, sep = "")
   }
   return(result)
 }
@@ -836,10 +836,12 @@ Below, we report the results from our pre-registered analyses including all obse
 
 ```{r includingall.exp2}
 exp2.everyone.test.table <- gen.m(exp2.1)
+
 exp2.everyone.test.ci <- gen.ci(exp2.1)[3:4,]
 
 exp2.everyone.test.beta <- lmer(scale(loglook)~ type + (1 | subj),
-                                     data=exp2.avg)
+                                     data=exp2.test)
+
 exp2.everyone.test.betas <- gen.beta(exp2.everyone.test.beta)
 
 exp2.everyone.test.results <- cbind(exp2.everyone.test.betas,exp2.everyone.test.table,exp2.everyone.test.ci)
@@ -1050,7 +1052,7 @@ corrplot(cor(cor.data[,-1]),
 fam.glance1 <- lmer(data = exp1.fam.glanced.off.summary,
                formula = prop.glancedoff ~ videoclip + (1|subj))
 summary(fam.glance1)
-tab_model(fam.glance1)
+tab_model(fam.glance1, show.stat=TRUE,show.df=TRUE)
 plot(allEffects(fam.glance1))
 ```
 
@@ -1058,7 +1060,7 @@ plot(allEffects(fam.glance1))
 
 fam.glance2 <- lm(data = exp1.famtest.glanceoff,
              formula = scale(delta.look) ~ scale(shallow_yes) + scale(medium_no) + scale(medium_yes) + scale(deep_no))
-tab_model(fam.glance2)
+tab_model(fam.glance2, show.stat=TRUE,show.df=TRUE)
 summary(fam.glance2)
 plot(allEffects(fam.glance2))
 ```
@@ -1075,7 +1077,7 @@ Overall, infants were equally likely to glance away from the screen (vs attend f
 fam1 <- lmer(data = exp1.fam.bymovie,
                formula = proportion.on.total ~ videoclip + (1|subj))
 summary(fam1)
-tab_model(fam1)
+tab_model(fam1, show.stat=TRUE, show.df=TRUE)
 plot(allEffects(fam1))
 ```
 
@@ -1089,7 +1091,7 @@ Together, these findings suggest that infants did not selectively attend to the 
 
 fam2 <- lm(data = exp1.famtest,
              formula = scale(delta.look) ~ scale(shallow_yes) + scale(medium_no) + scale(medium_yes) + scale(deep_no))
-tab_model(fam2)
+tab_model(fam2, show.stat=TRUE,show.df=TRUE)
 summary(fam2)
 plot(allEffects(fam2))
 ```
