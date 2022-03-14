@@ -78,6 +78,7 @@ exp3.avg <-dplyr::filter(long.avg, exp == "Exp.3")
 exp4.avg <-dplyr::filter(long.avg, exp == "Exp.4")
 exp5.avg <-dplyr::filter(long.avg, exp == "Exp.5")
 luts.exp3 <- dplyr::filter(long.avg, experiment == "LUTS.Exp.3")
+exp2345.avg <- dplyr::filter(long.avg, exp != "Exp.1")
 
 risk.avg <- long.avg %>%
   filter(cost == "Risk") %>%
@@ -1367,6 +1368,45 @@ Infants looked equally at test when the agent chose to jump the deeper trench vs
 ### Comparing test events to control events
 To test whether this looking preference reflected the relative danger of the different jumps, or other perceptual features of the shallow and deep trenches, we compared infants’ looking times during the control events, where their attention was drawn to each trench using an attention-getting star that was placed in the path of the agent’s subsequent actions. We found that infants did not show a looking preference across these test events (Mdeep=`r summary.avg$look[13]`s (SD=`r summary.avg$sd[13]`), Mshallow=`r summary.avg$look[14]`s (SD=`r summary.avg$sd[14]`), `r report(exp.5.3.results,2,3,2)`, no influential participants). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp5.2.results,4,3,2,1)`, no influential participants). 
 
+
+## Comparing 10mo and 13mo infants, pooling data across Experiments 2-5
+```{r}
+exp2345.avg <- dplyr::filter(long.avg, exp != "Exp.1") %>%
+  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
+                           type=="shallow" | type =="lower" ~ "shallow"))
+ggplot(data = exp2345.avg, aes(x = cliff, y = look)) +
+  geom_boxplot()+
+  geom_point()+
+  facet_wrap(agegroup~phase)
+
+pooling1013 <- lmer(loglook ~ cliff * phase * agegroup + (1|subj), data = exp2345.avg)
+
+summary(pooling1013)
+
+plot(allEffects(pooling1013))
+lsmeans(pooling1013, pairwise ~ cliff * phase * agegroup)
+
+
+plot(influence(pooling1013, "subj"), which="cook",
+     cutoff=4/102, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+pooling1013.table <- gen.m(pooling1013)
+pooling1013.ci <- gen.ci(pooling1013)[3:10,]
+
+pooling1013.betas <- gen.beta(pooling1013)
+
+pooling1013.results <- cbind(pooling1013.table, pooling1013.betas, pooling1013.ci)
+
+report(pooling1013.results,8,3,2)
+```
+
+
+```{r}
+
+```
+
 # Supplemental Online Materials
 
 ```{r logplot}
@@ -1598,6 +1638,8 @@ Ten-month-old infants did not show a looking preference between events when the 
 During the control events, infants again did not show a looking preference (Mdeep=`r summary.avg$look[13]`s, Mshallow=`r summary.avg$look[14]`s, `r report(exp.5.3.results.everyone,2,3,2)`). Infants’ looking preferences between the control events and the test events significantly differed from each other (`r report(exp5.everyone.results2,4,3,2)`). 
 
 Neither of these results are consistent with what we found in Experiment 3. 
+
+
 
 
 ## Order effects in Experiments 1 and 2 (reviewer suggestion)

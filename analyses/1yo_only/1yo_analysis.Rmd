@@ -34,6 +34,11 @@ wide <- read.csv(file = "peril_data_deid.csv", header = TRUE)
 head(wide)
 str(wide)
 
+wide.info <- wide %>% filter(exp == "Exp.1b"|
+                             exp == "Exp.2b"|
+                             exp == "Exp.3b") 
+table(wide.info$sex)
+
 # convert into long format
 long <- gather(wide, type, look, testavg_lower:control_deep) 
 str(long)
@@ -61,10 +66,15 @@ long.avg$sex <- relevel(as.factor(long.avg$sex), ref = "m")
 exp1.avg <-dplyr::filter(long.avg, exp == "Exp.1")
 exp2.avg <-dplyr::filter(long.avg, exp == "Exp.2")
 exp3.avg <-dplyr::filter(long.avg, exp == "Exp.3")
+exp1b.avg <-dplyr::filter(long.avg, exp == "Exp.1b")
+exp2b.avg <-dplyr::filter(long.avg, exp == "Exp.2b")
+exp3b.avg <-dplyr::filter(long.avg, exp == "Exp.3b")
+
+tenm <- rbind(exp1b.avg, exp2b.avg, exp3b.avg)
+tenm 
 
 risk.avg <- long.avg %>%
-  filter(cost == "Risk",
-         agegroup == "older") %>%
+  filter(cost == "Risk") %>%
   mutate(task = as.factor(
     case_when(experiment == "RISK13" ~ "infer.value",
               (experiment == "MR13" | experiment == "MR2") ~ "min.risk")))
@@ -790,7 +800,342 @@ We fully replicated the two key results from Experiment 2. Infants looked longer
 ### Exploratory results
 During the control events, infants showed a numerical but non-significant preference for the event in which the inanimate object appeared over the shallower trench (Mdeep=`r summary.avg %>% filter(exp=="Exp.3", cliff == "deep", phase=="control") %>% select(look) %>% as.numeric()`s, SE=`r summary.avg %>% filter(exp=="Exp.3", cliff == "deep", phase=="control") %>% select(se) %>% as.numeric()`; Mshallow=`r summary.avg %>% filter(exp=="Exp.3", cliff == "shallow", phase=="control") %>% select(look) %>% as.numeric()`s, SE=`r summary.avg %>% filter(exp=="Exp.3", cliff == "shallow", phase=="control") %>% select(se) %>% as.numeric()`; `r report2(exp3.results2, 2, 2, 2, flip)`, d=`r exp3.control.cohensd`, excluding 2 influential participants). See Figure 4A.
 
-# Supplemental Online Materials
+# Experiment 4, Studies 1-3 (10mo infants)
+### Study 1: Inferring value from risk (10-month-old infants)
+
+```{r study1.primary}
+exp1b.0 <- lmer(loglook ~ 1 + (1|subj),
+               data = exp1b.avg)
+
+exp1b.1 <- lmer(loglook ~ type + (1|subj),
+               data = exp1b.avg)
+
+# id influential observations
+plot(influence(exp1b.1, "subj"), which="cook",
+     cutoff=4/32, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# one influential observation, exclude
+
+exp1b.1.cooks <- lmer(loglook ~ type + (1|subj),
+               data = filter(exp1b.avg, subj != "S5_25"))
+
+exp1b.1.table <- gen.m(exp1b.1.cooks)
+exp1b.1.ci <- gen.ci(exp1b.1.cooks)[3:4,]
+
+exp1b.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = filter(exp1b.avg, subj != "S5_25"))
+exp1b.1.betas <- gen.beta(exp1b.1.beta)
+
+exp1b.results <- cbind(exp1b.1.table, exp1b.1.betas,exp1b.1.ci)
+
+exp1b.cohensd <- lme.dscore(exp1b.1.cooks,
+           data = filter(exp1b.avg, subj != "S5_25"),
+           type = "lme4") %>% select(d) %>% as.numeric() 
+```
+
+#### Comparing older and younger infants
+
+```{r study1.agediff}
+
+exp1.1013 <- long.avg %>% 
+  filter(exp == "Exp.1" | exp == "Exp.1b") %>% 
+  mutate(agegroup = as.factor(case_when(agem < 12 ~ "younger",
+                            agem > 12 ~ "older")))
+
+exp1.1013$type <- relevel(exp1.1013$type, ref = "higher")
+
+exp1.1013.1 <- lmer(loglook ~ type * agegroup + (1|subj),
+               data = exp1.1013)
+
+# id influential observations
+plot(influence(exp1.1013.1, "subj"), which="cook",
+     cutoff=4/64, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# one influential observation, exclude
+
+exp1.1013.1.cooks <- lmer(loglook ~ type * agegroup + (1|subj),
+               data = exp1.1013 %>% filter(subj != "S5_25"))
+
+exp1.1013.1.table <- gen.m(exp1.1013.1.cooks)
+exp1.1013.1.ci <- gen.ci(exp1.1013.1.cooks)[3:4,]
+
+exp1.1013.1.beta <- lmer(scale(loglook) ~ type * agegroup  + (1|subj),
+               data = exp1.1013 %>% filter(subj != "S5_25"))
+exp1.1013.1.betas <- gen.beta(exp1.1013.1.beta)
+
+exp1.1013.results <- cbind(exp1.1013.1.table, exp1.1013.1.betas,exp1.1013.1.ci)
+
+exp1.1013.cohensd <- lme.dscore(exp1.1013.1.cooks,
+           data = filter(exp1.1013, subj != "S5_25"),
+           type = "lme4") %>% select(d) %>% slice(3) %>% as.numeric() 
+```
+
+### Study 2: Minimizing danger
+
+```{r study2.primary}
+
+exp2b.test <- exp2b.avg %>% filter(phase=="testavg") 
+
+exp2b.info <- info(exp2b.test)
+
+
+exp2b.0 <- lmer(loglook ~ 1 + (1|subj),
+               data = exp2b.test)
+
+exp2b.1 <- lmer(loglook ~ type + (1|subj),
+               data = exp2b.test)
+summary(exp2b.1)
+# id influential observations
+plot(influence(exp2b.1, "subj"), which="cook",
+     cutoff=4/30, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# no influential observations
+
+exp2b.1.cooks <- lmer(loglook ~ type + (1|subj),
+               data = exp2b.test %>% filter(subj != "03-MR"))
+exp2b.1.table <- gen.m(exp2b.1.cooks)
+exp2b.1.ci <- gen.ci(exp2b.1.cooks)[3:4,]
+
+exp2b.1.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp2b.test %>% filter(subj != "03-MR"))
+exp2b.1.betas <- gen.beta(exp2b.1.beta)
+
+exp2b.1.results <- cbind(exp2b.1.table, exp2b.1.betas, exp2b.1.ci)
+
+exp2b.test.cohensd <- lme.dscore(exp2b.1.cooks,
+           data = exp2b.test %>% filter(subj != "03-MR"),
+           type = "lme4") %>% select(d) %>% as.numeric() 
+```
+
+```{r study2.control}
+exp2b.control <- exp2b.avg %>% filter(phase=="control")
+
+exp2b.2 <- lmer(loglook ~ type + (1|subj),
+               data = exp2b.control)
+
+# id influential observations
+plot(influence(exp2b.2, "subj"), which="cook",
+     cutoff=4/30, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+# one influential observation
+
+exp2b.2.cooks <- lmer(loglook ~ type + (1|subj),
+               data = exp2b.control %>% filter(subj != "21-MR"))
+
+exp2b.2.table <- gen.m(exp2b.2.cooks)
+exp2b.2.ci <- gen.ci(exp2b.2.cooks)[3:4,]
+
+exp2b.2.beta <- lmer(scale(loglook) ~ type + (1|subj),
+               data = exp2b.control %>% filter(subj != "21-MR"))
+exp2b.2.betas <- gen.beta(exp2b.2.beta)
+
+exp2b.results2 <- cbind(exp2b.2.table, exp2b.2.betas, exp2b.2.ci)
+
+exp2b.control.cohensd <- lme.dscore(exp2b.2.cooks,
+           data = exp2b.control %>% filter(subj != "21-MR"),
+           type = "lme4") %>% select(d) %>% as.numeric() 
+```
+
+```{r study2.interaction}
+exp2b.control.test <- exp2b.avg %>%
+  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
+                           type=="shallow" | type =="lower" ~ "shallow"))
+
+# summary.mr <- summarySEwithin(data = exp2b.control.test, measurevar = "look", withinvars = c("cliff", "type", "phase"), idvar="subj")
+  
+exp2b.control.test$type <- as.factor(exp2b.control.test$type)
+
+exp2b.3 <- lmer(loglook ~ cliff * phase + (1|subj),
+                     data = exp2b.control.test)
+
+plot(influence(exp2b.3, "subj"), which="cook",
+     cutoff=4/30, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+exp2b.3.table <- gen.m(exp2b.3)
+exp2b.3.ci <- gen.ci(exp2b.3)[3:6,]
+
+exp2b.3.beta <- lmer(scale(loglook) ~ cliff * phase + (1|subj),
+                     data = exp2b.control.test)
+exp2b.3.betas <- gen.beta(exp2b.3.beta)
+
+exp2b.results3 <- cbind(exp2b.3.table,exp2b.3.betas,exp2b.3.ci)
+
+exp2b.interaction.cohensd <- lme.dscore(exp2b.3,
+           data = exp2b.control.test,
+           type = "lme4") %>% select(d) %>% slice(3) %>% as.numeric() 
+```
+
+### Study 3: Minimizing danger (online, no shattering)
+```{r}
+exp3b.devices<- wide %>%
+  filter(exp == "Exp.3b") %>%
+  tabyl(device)
+
+exp3b.highchair <- wide %>%
+  filter(exp == "Exp.3b") %>%
+  tabyl(highchair)
+
+exp3b.qualratings <- wide %>%
+  filter(exp == "Exp.3b") %>%
+  summarise(vquality = mean(video_quality, na.rm=TRUE),
+            vquality.sd = sd(video_quality, na.rm=TRUE),
+            aquality = mean(audio_quality, na.rm=TRUE),
+            aquality.sd = sd(audio_quality, na.rm=TRUE))
+
+```
+
+```{r study3.test}
+exp3b.test <- exp3b.avg %>% filter(phase == "testavg")
+exp3b.avg$type <- relevel(exp3b.avg$type, ref = "lower")
+
+
+exp3b.1 <- lmer(data = exp3b.test, 
+     formula = loglook ~ type + (1|subj))
+summary(exp3b.1)
+# 1 influential subject found
+plot(influence(exp3b.1, "subj"), which="cook",
+     cutoff=4/40, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+exp3b.1.cooks <- lmer(data = exp3b.test %>% filter(subj != "10m_33"), 
+     formula = loglook ~ type + (1|subj))
+summary(exp3b.1.cooks)
+
+exp3b.1.table <- gen.m(exp3b.1.cooks)
+exp3b.1.ci <- gen.ci(exp3b.1.cooks)[3:4,]
+
+exp3b.1.beta <- lmer(scale(loglook) ~type + (1|subj),
+               data = exp3b.test %>% filter(subj != "10m_33"))
+exp3b.1.betas <- gen.beta(exp3b.1.beta)
+
+exp3b.1.results <- cbind(exp3b.1.table, exp3b.1.betas, exp3b.1.ci)
+
+exp3b.test.cohensd <- lme.dscore(exp3b.1.cooks,
+           data = exp3b.test %>% filter(subj != "10m_33"),
+           type = "lme4") %>% select(d)  %>% as.numeric() 
+```
+
+```{r study3.interaction}
+exp3b.control.test <- exp3b.avg %>%
+  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
+                           type=="shallow" | type =="lower" ~ "shallow"))
+exp3b.control.test$cliff <- as.factor(exp3b.control.test$cliff)
+
+exp3b.2 <- lmer(data = exp3b.control.test, 
+     formula = loglook ~ cliff * phase + (1|subj))
+summary(exp3b.2)
+
+# no influential subjects detected
+plot(influence(exp3b.2, "subj"), which="cook",
+     cutoff=4/40, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+exp3b.2.table <- gen.m(exp3b.2)
+exp3b.2.ci <- gen.ci(exp3b.2)[3:6,]
+
+exp3b.2.beta <- lmer(scale(loglook) ~cliff * phase + (1|subj),
+               data = exp3b.control.test)
+exp3b.2.betas <- gen.beta(exp3b.2.beta)
+
+exp3b.2.results <- cbind(exp3b.2.table, exp3b.2.betas, exp3b.2.ci)
+
+exp3b.interaction.cohensd <- lme.dscore(exp3b.2,
+           data = exp3b.control.test,
+           type = "lme4") %>% select(d) %>% slice(3) %>% as.numeric() 
+```
+
+```{r study3.control}
+exp3b.control <- exp3b.avg %>%
+  filter(phase=="control") %>%
+  mutate(cliff = type)
+
+exp3b.3 <- lmer(data = exp3b.control, 
+     formula = loglook ~ cliff + (1|subj))
+summary(exp3b.3)
+
+plot(influence(exp3b.3, "subj"), which="cook",
+     cutoff=4/40, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+exp3b.3.table <- gen.m(exp3b.3)
+exp3b.3.ci <- gen.ci(exp3b.3)[3:4,]
+
+exp3b.3.beta <- lmer(data = exp3b.control,
+     formula = scale(loglook) ~ cliff + (1|subj))
+exp3b.3.betas <- gen.beta(exp3b.3.beta)
+
+exp3b.3.results <- cbind(exp3b.3.table, exp3b.3.betas, exp3b.3.ci)
+
+exp3b.control.cohensd <- lme.dscore(exp3b.3,
+           data = exp3b.control.test,
+           type = "lme4") %>% 
+  select(d) %>% as.numeric() 
+```
+
+### Comparing Studies 2-3 and Experiments 2-3
+
+```{r}
+
+exp23.1013.avg <- rbind(exp3.avg, exp2.avg, exp2b.avg, exp3b.avg) %>%
+  mutate(cliff = case_when(type=="deep" | type =="higher" ~ "deep",
+                           type=="shallow" | type =="lower" ~ "shallow"))
+
+pooling.exp23 <- lmer(loglook ~ cliff * phase * agegroup + (1|subj), data = exp23.1013.avg)
+
+summary(pooling.exp23)
+
+plot(allEffects(pooling.exp23))
+lsmeans(pooling.exp23, pairwise ~ cliff * phase * agegroup)
+
+plot(influence(pooling.exp23, "subj"), which="cook",
+     cutoff=4/142, sort=TRUE,
+     xlab="Cook´s Distance",
+     ylab="Subject ID")
+
+pooling.exp23.cooks <- lmer(loglook ~ cliff * phase * agegroup + (1|subj), data = exp23.1013.avg %>% filter(subj != "28"))
+summary(pooling.exp23.cooks)
+
+pooling.exp23.table <- gen.m(pooling.exp23.cooks)
+pooling.exp23.ci <- gen.ci(pooling.exp23.cooks)[3:10,]
+
+pooling.exp23.betas <- gen.beta(pooling.exp23.cooks)
+
+pooling.exp23.results <- cbind(pooling.exp23.table, pooling.exp23.betas, pooling.exp23.ci)
+
+pooling.exp23.cohensd <- lme.dscore(pooling.exp23.cooks,
+           data = exp23.1013.avg %>% filter(subj != "28"),
+           type = "lme4") %>% slice(7) %>%
+  select(d) %>% as.numeric()
+```
+In Experiment 4, we investigated the developmental origins of the capacity to reason about danger by testing infants under one year of age, using the respective methods of Experiments 1-3. We will reference these samples as Experiment 4, Studies 1, 2, and 3. All 3 studies focused on 10-month-olds because of their previous success in reasoning about the physical costs of actions (e.g. in [redacted]).
+
+### Methods
+#### Participants
+
+Our final sample included a grand total of 102 10-month-old infants. Studies 1-2 were conducted in the lab, and our final sample included `r info(exp1b.avg)$n` infants in Study 1 (M=`r info(exp1b.avg)$mean` months, range=`r info(exp1b.avg)$min`-`r info(exp1b.avg)$max`, `r info(exp1b.avg)$f` female; an additional 6 infants tested and excluded from the final sample), and `r info(exp2b.avg)$n` infants in Study 2 (M=`r info(exp2b.avg)$mean` months, range=`r info(exp2b.avg)$min`-`r info(exp2b.avg)$max`, `r info(exp2b.avg)$f` female; an additional 2 infants tested and excluded). In Study 3, we collected an online sample of `r info(exp3b.avg)$n` (M=(M=`r info(exp3b.avg)$mean` months, range=`r info(exp3b.avg)$min`-`r info(exp3b.avg)$max`, `r info(exp3b.avg)$f` female, xxxx excluded). In the online sample, infants sat in a high chair (`r exp3b.highchair %>% filter(highchair=="1") %>% select(n) %>% as.numeric()` out of 40 participants) or their caregivers’ laps (`r exp3b.highchair %>% filter(highchair=="0") %>% select(n) %>% as.numeric()`/40), depending on caregiver preferences, and watched the displays on a tablet (`r exp3b.devices %>% filter(device=="ipad") %>% select(n) %>% as.numeric()`/40) or a laptop computer (`r exp3b.devices %>% filter(device=="laptop") %>% select(n) %>% as.numeric()`/40). Caregivers gave high ratings for both the video quality (M=`r exp3b.qualratings$vquality`, SD=`r exp3b.qualratings$vquality.sd`) and audio quality (M=`r exp3b.qualratings$aquality`, SD=`r exp3b.qualratings$aquality.sd`). All three of these studies were pre-registered (Study 1: https://osf.io/uh8ns/; Study 2: https://osf.io/kx928/, Study 3: https://osf.io/48j9v/)
+	Data reliability. As in Experiments 1-3, the reliability of the looking time data in Experiment 4 were high (Study 1: ICC=0.995, 95% CI [0.991, 0.997]; Study 2: ______; Study 3:______) 
+
+### Results
+#### Inferring value from danger (Study 1)
+When we tested 10-month-old infants using identical protocols as reported in Experiment 1, these younger infants did not show a statistically significant looking preference between the test events, (Mhighervalue=`r summary.avg %>% filter(exp=="Exp.1b") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mlowervalue= `r summary.avg %>% filter(exp=="Exp.1b") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE=`r summary.avg %>% filter(exp=="Exp.1b") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp1b.results,2,3,1)` d=`r exp1b.cohensd`, removing 1 influential participant). Comparing the data from Experiment 1 and Experiment 4, Study 1, 10- and 13-month-old infants did not significantly differ in their looking preferences in this task, `r report(exp1.1013.results,4,3,2)`, d=`r exp1.1013.cohensd`, no influential participants. 
+
+#### Avoiding danger (Studies 2-3) 
+When we tested 10-month-old infants in identical protocols as Experiment 2, ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeeper=`r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mshallower= `r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE=`r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp2b.1.results,2,3,1)` d=`r exp2b.test.cohensd*-1`, removing 1 influential participant). During control events, 10-month-old infants did not show a significant looking preference (Mdeeper=`r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "deep") %>% select(look) %>% as.numeric()`s, Mshallower= `r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "shallow") %>% select(look) %>% as.numeric()`, pooled SE=`r summary.avg %>% filter(exp=="Exp.2b") %>% filter(type == "deep") %>% select(se) %>% as.numeric()`, `r report(exp2b.results2,2,3,2)` d=`r exp2b.control.cohensd*-1`, excluding 1 influential participant). In contrast to the data from older infants, these two patterns of looking preference did not differ from each other, `r report(exp2b.results3,4,3,2)`, d=`r exp3b.interaction.cohensd`no influential participants.
+
+Notably, we did not replicate the results of Study 2 when we ran an additional online sample of infants: In Study 3, 10-month-old infants did not show a looking preference during the test events (Mdeeper=`r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mshallower= `r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE=`r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp3b.1.results,2,3,1)` d=`r exp3b.test.cohensd`, excluding 1 influential participant), or the control events (Mdeeper=`r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "deep") %>% select(look) %>% as.numeric()`s, Mshallower= `r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "shallow") %>% select(look) %>% as.numeric()`, pooled SE=`r summary.avg %>% filter(exp=="Exp.3b") %>% filter(type == "deep") %>% select(se) %>% as.numeric()`, `r report(exp3b.3.results,2,3,2)` d=`r exp3b.control.cohensd*-1`, no influential participants), and their looking preferences did not differ across the two phases of the experiment, `r report(exp3b.2.results,4,2,2)`, d=`r exp3b.interaction.cohensd`, no influential observations.
+
+Pooling data across older and younger infants tested in Experiments 2-3, and Experiment 4, Studies 2-3, we found a marginal 3-way interaction between cliff depth (shallow vs deep), phase of experiment (control vs test), and age group (infants younger than 1y vs older than 1y), `r report(pooling.exp23.results,8,3,2)`, d=`r pooling.exp23.cohensd`, 1 influential participant. Thus, in a large and sufficiently powered sample (N=142), infants younger and infants older than 1 year of age weakly differed in their pattern of looking responses to events where agents choose more vs less dangerous actions, compared to their looking responses when their attention was simply drawn to the physical trenches where these actions occurred.
+
+# Supplemental Materials
 
 ```{r logplot}
 # is a lognormal transformation justified given the distribution of looks?
@@ -808,8 +1153,7 @@ fig.S1 +
 
 ```{r famplot}
 fam <- wide %>%
-  filter(cost=="Risk",
-         (exp == "Exp.1" | exp ==  "Exp.2" | exp== "Exp.3"))%>%
+  filter(cost=="Risk")%>%
   gather(trial, look, fam1:test4) %>%
   mutate(trial_n = parse_number(trial)) %>%
   mutate(trial_type = str_extract(trial, "[a-z]+"))
@@ -962,7 +1306,6 @@ exp1.fam.glanced.off.summary$videoclip <- factor(exp1.fam.glanced.off.summary$vi
 ```
 
 ```{r}
-
 figS3 <- exp1.fam.glanced.off.summary %>%
   ggplot(aes(videoclip, prop.glancedoff, fill=depth)) + 
   geom_boxplot() +
