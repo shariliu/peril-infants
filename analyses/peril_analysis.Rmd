@@ -14,7 +14,7 @@ knitr::opts_chunk$set(comment = "##", echo = TRUE, warning = FALSE, message = FA
 options(scipen = 0, digits = 2)
 
 ## load required packages
-ipak <- function (pkg) {
+ipak <- function(pkg) {
   new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
   if (length(new.pkg)) 
     install.packages(new.pkg, dependencies = TRUE)
@@ -30,18 +30,17 @@ ipak(packages)
 sessionInfo()
 ```
 
-
 ```{r prep.data}
 # attempt to fix bs with dplyr
-detach("package:dplyr", unload = TRUE)
-library(dplyr)
+# detach("package:dplyr", unload = TRUE)
+# library(dplyr)
 
 # read in data
 wide <- read.csv(file = "peril_data_deid.csv", header = TRUE) 
 head(wide)
 str(wide)
 
-wide.info <- wide %>% filter(cost = "Danger")
+wide.info <- wide %>% filter(cost == "Danger")
 
 table(wide.info$sex)
 
@@ -1282,7 +1281,7 @@ pooling.exp3b.2b.betas <- gen.beta(pooling.exp3b.2b)
 pooling.exp3b.2b.results <- cbind(pooling.exp3b.2b.table, pooling.exp3b.2b.betas, pooling.exp3b.2b.ci)
 
 pooling.exp3b.2b.cohensd <- lme.dscore(pooling.exp3b.2b,
-           data = exp3b.2b.1013.avg,
+           data = exp4.studies23.avg,
            type = "lme4") %>% slice(7) %>%
   select(d) %>% as.numeric()
 ```
