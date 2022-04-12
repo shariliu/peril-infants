@@ -30,7 +30,7 @@ ipak(packages)
 sessionInfo()
 ```
 
-```{r prep.data}
+```{r prep.data, echo=FALSE}
 # attempt to fix bs with dplyr
 # detach("package:dplyr", unload = TRUE)
 # library(dplyr)
@@ -38,7 +38,7 @@ sessionInfo()
 # read in data
 wide <- read.csv(file = "peril_data_deid.csv", header = TRUE) 
 head(wide)
-str(wide)
+# str(wide)
 
 wide.info <- wide %>% filter(cost == "Danger")
 
@@ -46,7 +46,7 @@ table(wide.info$sex)
 
 # convert into long format
 long <- gather(wide, type, look, testavg_lower:control_deep) 
-str(long)
+# str(long)
 
 # log transform looks
 long$look <- as.numeric(as.character(long$look))
@@ -76,7 +76,6 @@ exp4.study2.avg <- dplyr::filter(long.avg, exp == "Exp4.Study2")
 exp4.study3.avg <- dplyr::filter(long.avg, exp == "Exp4.Study3")
 
 tenm <- rbind(exp4.study1.avg, exp4.study2.avg, exp4.study3.avg)
-tenm 
 
 risk.avg <- long.avg %>%
   filter(cost == "Danger") %>%
@@ -1640,6 +1639,100 @@ fam2 <- lm(data = exp1.famtest,
 tab_model(fam2, show.stat = TRUE,show.df = TRUE)
 summary(fam2)
 plot(allEffects(fam2))
+```
+
+
+# Plots from Experiment 4
+
+```{r fig.exp4/study1, include = TRUE, fig.width = 4}
+
+theme_set(theme_cowplot(font_size = 20))
+
+exp4.study1.fig.data <- exp4.study1.avg
+levels(exp4.study1.fig.data$type) <- c(NA, "higher", "lower", NA)
+exp4.study1.fig.data$type <- relevel(exp4.study1.fig.data$type, ref = "higher")
+colors1 <- c(wes_palettes$Zissou1[3], wes_palettes$Zissou1[2])
+
+exp4.fig <- ggplot(data = exp4.study1.fig.data %>% filter(!is.na(type)), aes(type, look, fill = type)) +
+  geom_boxplot() +
+  scale_fill_manual(values = colors1) +
+    geom_errorbar(data = summary.avg %>% filter(exp == "Exp4.Study1"), colour = "red", position = position_dodge(width = 5), width = 0, aes(ymin = look-ci, ymax = look+ci)) +
+  stat_summary(fun = mean, alpha = 0.8, geom = "point", shape = 21, size = 3, position = "dodge", colour = "red", fill = "red") +
+  ylab("Looking Time (s)") +
+  xlab("Test event") +
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.2, aes(group = subj)) +
+  theme(legend.position = "none") +
+  scale_x_discrete(labels = c("higher\nvalue", "lower\nvalue"))
+  # annotate("text", colour = "red", x = 1.5, y = 63, size = 30, label = c("*ß = 0.354"))
+
+exp4.fig
+```
+
+**Figure S5.** Looking time towards test events in Experiment 4 Study 1. 
+
+```{r fig.exp4.study23, include = TRUE, fig.width = 8, fig.height = 8}
+
+exp4.study23.figure <- rbind(exp4.studies23.avg) %>%
+  mutate(cliff = case_when(type == "deep" | type == "higher" ~ "deep",
+                           type == "shallow" | type == "lower" ~ "shallow"))
+exp4.study23.figure$cliff <- as.factor(exp4.study23.figure$cliff)
+exp4.study23.figure$cliff <- relevel(exp4.study23.figure$cliff, ref = "shallow")
+exp4.study23.figure$phase <- as.factor(exp4.study23.figure$phase)
+
+levels(exp4.study23.figure$cliff)
+levels(exp4.study23.figure$phase) <- c("control", "test")
+exp23.colors <- c(wes_palette("Royal2")[2], wes_palette("Royal2")[1])
+
+exp4.study2.fig <- ggplot(data = exp4.study23.figure %>% filter(exp == "Exp4.Study2"), aes(cliff, look, fill = cliff)) +
+  geom_boxplot(aes(alpha = phase)) +
+  stat_summary(fun = mean, alpha = 0.8, geom = "point", shape = 21, size = 3, position = "dodge", colour = "red", fill = "red") +
+  geom_errorbar(data = summary.avg %>% filter(exp == "Exp4.Study2"), colour = "red", position = position_dodge(width = 5), width = 0, aes(ymin = look-ci, ymax = look+ci)) +
+  ylab("Looking Time (s)") +
+  xlab("Cliff Depth") +
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.2, aes(group = subj)) +
+  facet_wrap(exp~phase, nrow = 1) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = exp23.colors) +
+  scale_alpha_discrete(range = c(0.4, 1)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+exp4.study3.fig <- ggplot(data = exp4.study23.figure %>% filter(exp == "Exp4.Study3"), aes(cliff, look, fill = cliff)) +
+  geom_boxplot(aes(alpha = phase)) +
+  stat_summary(fun = mean, alpha = 0.8, geom = "point", shape = 21, size = 3, position = "dodge", colour = "red", fill = "red") +
+  geom_errorbar(data = summary.avg %>% filter(exp == "Exp4.Study3"), colour = "red", position = position_dodge(width = 5), width = 0, aes(ymin = look-ci, ymax = look+ci)) +
+  ylab("Looking Time (s)") +
+  xlab("Cliff Depth") +
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.2, aes(group = subj)) +
+  facet_wrap(exp~phase, nrow = 1) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = exp23.colors) +
+  scale_alpha_discrete(range = c(0.4, 1)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+exp4.studies233.fig <- ggplot(data = exp4.study23.figure %>% filter(exp == "Exp4.Study3" | exp == "Exp4.Study2"), aes(cliff, look, fill = cliff)) +
+  geom_boxplot(aes(alpha = phase)) +
+  stat_summary(fun = mean, alpha = 0.8, geom = "point", shape = 21, size = 3, position = "dodge", colour = "red", fill = "red") +
+  geom_errorbar(data = summary.avg %>% filter(exp == "Exp4.Study3" | exp == "Exp4.Study2"), colour = "red", position = position_dodge(width = 5), width = 0, aes(ymin = look-ci, ymax = look+ci)) +
+  ylab("Looking Time (s)") +
+  xlab("Cliff Depth") +
+  coord_cartesian(ylim = c(0, 65)) +
+  geom_point(alpha = 0.1) +
+  geom_line(alpha = 0.2, aes(group = subj)) +
+  facet_wrap(~exp+agegroup+phase, nrow = 1) +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = exp23.colors) +
+  scale_alpha_discrete(range = c(0.4, 1)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) 
+
+exp4.study2.fig + exp4.study3.fig + plot_annotation(tag_levels = 'A')
+
+exp4.studies233.fig
 ```
 
 
