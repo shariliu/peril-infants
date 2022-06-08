@@ -1,0 +1,122 @@
+---
+title: "Width vs Depth Pilot study"
+author: "Shari Liu"
+date: '2022-06-08'
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = FALSE, cache = FALSE)
+
+## load required packages
+ipak <- function(pkg) {
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+
+
+# Install remotes package if necessary
+if(!requireNamespace("remotes", quietly = TRUE)) install.packages("remotes")
+
+# Install the stable development version from GitHub
+remotes::install_github("crsh/papaja@devel")
+
+packages <- c("tidyverse", "cowplot", "patchwork", "knitr", "emmeans", "lme4", "lmerTest", "sjPlot")
+
+ipak(packages)
+
+# set summed contrasts
+options(contrasts = c("contr.sum", "contr.poly")) 
+
+# fix bs with dplyr 
+detach("package:dplyr", unload = TRUE)
+library("dplyr")
+
+sessionInfo()
+```
+
+
+```{r cars}
+data <- read.csv(file = "widthdepth_pilotdata.csv")
+str(data) 
+
+data$dv <- as.factor(data$dv)
+data$subj <- as.factor(data$subj)
+
+data$subj
+dim(data)
+
+data %>%
+  group_by(subj, Depth, Width) %>%
+  summarise(n=n()) %>%
+  View
+```
+
+## Plots
+```{r plots, echo=FALSE, fig.width=12}
+theme_set(theme_cowplot(font_size = 15))
+
+depthplot <- ggplot(data, aes(Depth, response, colour = dv)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~dv,nrow = 1) +
+  theme(legend.position = "none")
+
+widthplot <- ggplot(data, aes(Width, response, colour = dv)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~dv,nrow = 1) +
+  theme(legend.position = "none")
+
+```
+
+```{r fig.asp=2}
+depthplot + widthplot + plot_annotation(tag_levels = 'A')
+```
+
+# Analysis
+```{r}
+
+forcedata <- data %>% filter(dv == "Force")
+probdata <- data %>% filter(dv == "Probability")
+tireddata <- data %>% filter(dv == "Tired")
+
+
+model.force <- lmer(response ~ Depth * Width + (1|subj), data = forcedata)
+summary(model.force)
+
+model.prob <- lmer(response ~ Depth * Width + (1|subj), data = probdata)
+summary(model.prob)
+
+model.effort <- lmer(response ~ Depth * Width + (1|subj), data = tireddata)
+summary(model.effort)
+
+```
+
+
+```{r}
+tab_model(model.force, 
+          show.intercept = TRUE, 
+          show.df = TRUE,
+          show.stat = TRUE,
+          show.ngroups = TRUE)
+```
+
+```{r}
+tab_model(model.prob, 
+          show.intercept = TRUE, 
+          show.df = TRUE,
+          show.stat = TRUE,
+          show.ngroups = TRUE)
+```
+
+```{r}
+tab_model(model.effort, 
+          show.intercept = TRUE, 
+          show.df = TRUE,
+          show.stat = TRUE,
+          show.ngroups = TRUE)
+```
