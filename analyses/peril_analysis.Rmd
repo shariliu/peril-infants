@@ -849,7 +849,6 @@ exp1b.cohensd <- lme.dscore(exp1b.1.cooks,
 #### Comparing older and younger infants
 
 ```{r study1.agediff}
-
 exp1.1013 <- long.avg %>% 
   filter(exp == "Exp.1" | exp == "Exp4.Study1") %>% 
   mutate(agegroup = as.factor(case_when(agem < 12 ~ "younger",
@@ -881,6 +880,44 @@ exp1.1013.results <- cbind(exp1.1013.1.table, exp1.1013.1.betas,exp1.1013.1.ci)
 
 exp1.1013.cohensd <- lme.dscore(exp1.1013.1.cooks,
            data = filter(exp1.1013, subj != "S5_25"),
+           type = "lme4") %>% select(d) %>% slice(3) %>% as.numeric() 
+```
+
+#### Comparing 10mo in Exp 4, Study 1 to 10mo in Liu et al. (2017), Study 3   
+```{r}
+
+widthvsdepth.10mo <- long.avg %>% 
+  filter(exp == "Exp4.Study1" | exp == "LUTS.Exp.3") %>%
+  mutate(trench_manipulation = case_when(cost == "Gap" ~ "width",
+                                         cost == "Danger" ~ "depth"))
+
+widthvsdepth.10mo$type <- relevel(widthvsdepth.10mo$type, ref = "higher")
+
+
+widthvsdepth.10mo.1 <- lmer(loglook ~ type * trench_manipulation + (1|subj),
+               data = widthvsdepth.10mo)
+
+# id influential observations
+plot(influence(widthvsdepth.10mo.1, "subj"), which = "cook",
+     cutoff = 4/64, sort = TRUE,
+     xlab = "Cook´s Distance",
+     ylab = "Subject ID")
+# one influential observation, exclude
+
+widthvsdepth.10mo.1.cooks <- lmer(loglook ~ type * trench_manipulation + (1|subj),
+               data = widthvsdepth.10mo %>% filter(subj != "S3_15"))
+
+widthvsdepth.10mo.1.table <- gen.m(widthvsdepth.10mo.1.cooks)
+widthvsdepth.10mo.1.ci <- gen.ci(widthvsdepth.10mo.1.cooks)[3:6,]
+
+widthvsdepth.10mo.1.beta <- lmer(scale(loglook) ~ type * trench_manipulation + (1|subj),
+               data = widthvsdepth.10mo %>% filter(subj != "S5_25"))
+widthvsdepth.10mo.1.betas <- gen.beta(widthvsdepth.10mo.1.beta)
+
+widthvsdepth.10mo.results <- cbind(widthvsdepth.10mo.1.table, widthvsdepth.10mo.1.betas,widthvsdepth.10mo.1.ci)
+
+widthvsdepth.10mo.cohensd <- lme.dscore(widthvsdepth.10mo.1.cooks,
+           data = filter(widthvsdepth.10mo, subj != "S3_15"),
            type = "lme4") %>% select(d) %>% slice(3) %>% as.numeric() 
 ```
 
@@ -1307,7 +1344,7 @@ Our final sample included a grand total of 102 10-month-old infants. Studies 1-2
 
 ### Results
 #### Inferring value from danger (Study 1)
-When we tested 10-month-old infants using identical protocols as reported in Experiment 1, these younger infants did not show a statistically significant looking preference between the test events, (Mhighervalue = `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mlowervalue =  `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE = `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp1b.results,2,3,1)` d = `r exp1b.cohensd`, removing 1 influential participant). Comparing the data from Experiment 1 and Experiment 4, Study 1, 10- and 13-month-old infants did not significantly differ in their looking preferences in this task, `r report(exp1.1013.results,4,3,2)`, d = `r exp1.1013.cohensd`, no influential participants. 
+When we tested 10-month-old infants using identical protocols as reported in Experiment 1, these younger infants did not show a statistically significant looking preference between the test events, (Mhighervalue = `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mlowervalue =  `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE = `r summary.avg %>% filter(exp == "Exp4.Study1") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp1b.results,2,3,1)` d = `r exp1b.cohensd`, removing 1 influential participant). Comparing the data from Experiment 1 and Experiment 4, Study 1, 10- and 13-month-old infants did not significantly differ in their looking preferences in this task, `r report(exp1.1013.results,4,3,2)`, d = `r exp1.1013.cohensd`, removing 1 influential participant. Comparing 10-month-old infants' responses in this study, that manipulates trench depth, with the responses of infants at the same age to an analogous study, that manipulates trench width, infants' responses to the test events were not different depending on whether the task manipulated depth vs width `r report(widthvsdepth.10mo.results,4,3,2)`, d = `r widthvsdepth.10mo.cohensd`, removing 1 influential participant.
 
 #### Avoiding danger (Studies 2-3) 
 When we tested 10-month-old infants in identical protocols as Experiment 2, ten-month-old looked longer at test when the agent chose the deeper the shallower trench (Mdeeper = `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "higher") %>% select(look) %>% as.numeric()`s, Mshallower =  `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "lower") %>% select(look) %>% as.numeric()`, pooled SE = `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "lower") %>% select(se) %>% as.numeric()`, `r report(exp2b.1.results,2,3,1)` d = `r exp2b.test.cohensd*-1`, removing 1 influential participant). During control events, 10-month-old infants did not show a significant looking preference (Mdeeper = `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "deep") %>% select(look) %>% as.numeric()`s, Mshallower =  `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "shallow") %>% select(look) %>% as.numeric()`, pooled SE = `r summary.avg %>% filter(exp == "Exp4.Study2") %>% filter(type == "deep") %>% select(se) %>% as.numeric()`, `r report(exp2b.results2,2,3,2)` d = `r exp2b.control.cohensd*-1`, excluding 1 influential participant). In contrast to the data from older infants, these two patterns of looking preference did not differ from each other, `r report(exp2b.results3,4,3,2)`, d = `r exp3b.interaction.cohensd`no influential participants.
@@ -1533,15 +1570,15 @@ exp1.fam.bymovie <- exp1.fam %>%
   distinct(proportion.on.total)
 
 exp1.fam.bymovie.wide <- exp1.fam.bymovie %>%
-  pivot_wider(names_from = videoclip, values_from = proportion.on.total, id = subj)
+  pivot_wider(names_from = videoclip, values_from = proportion.on.total, id_cols = c(subj))
 
 exp1.avg.diff <- exp1.avg %>%
   filter(phase == "testavg") %>%
-  pivot_wider(names_from = type, values_from = look, id = subj) %>%
+  pivot_wider(names_from = type, values_from = look, id_cols = subj) %>%
   mutate(delta.look = lower-higher)
 
 exp1.fam.glancedoff.wide <- exp1.fam.glanced.off.summary %>%
-  pivot_wider(names_from = videoclip, values_from = prop.glancedoff, id = subj)
+  pivot_wider(names_from = videoclip, values_from = prop.glancedoff, id_cols = subj)
 
 exp1.famtest <- full_join(exp1.fam.bymovie.wide, exp1.avg.diff, by = c("subj")) %>% 
   na.omit()

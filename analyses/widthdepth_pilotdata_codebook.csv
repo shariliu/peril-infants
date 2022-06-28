@@ -1,0 +1,12 @@
+variable,label,value_labels
+Depth,"depth of the trench on the current trial, range 1-4",
+Width,"width of the trench on the current trial, range 1-4",
+subj,de-identified subject id,
+dv,"question asked of participants: Force, Probability or Tired",
+response,"continuous response 0-100
+
+Force: How much force will this agent need to expend in order to successfully perform the action? (0 = This agent will need to expend very little force; 100 = This agent will need to expend a great amount of force)
+
+Probability: What do you think is likely to happen? (0 = The agent will definitely fail; 100 = The agent will definitely succeed)
+
+Tired: Imagine that the agent successfully jumps across the cliff. How tired will they be afterwards? (0 - This agent will not be tired at all; 100 - This agent will be extremely tired)",

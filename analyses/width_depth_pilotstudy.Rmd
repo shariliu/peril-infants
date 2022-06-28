@@ -74,7 +74,7 @@ widthplot <- ggplot(data, aes(Width, response, colour = dv)) +
 ```
 
 ```{r fig.asp=2}
-depthplot + widthplot + plot_annotation(tag_levels = 'A')
+depthplot + widthplot
 ```
 
 # Analysis
