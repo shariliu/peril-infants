@@ -471,7 +471,7 @@ exp3.figure <- ggplot(data = exp23.figure %>% filter(exp == "Exp.3"), aes(cliff,
   labs(subtitle = "Experiment 3")
 
 
-exp2.figure + exp3.figure + plot_annotation(tag_levels = 'A')
+exp2.figure + exp3.figure
 
 ```
 
@@ -1769,7 +1769,6 @@ exp4.studies233.fig <- ggplot(data = exp4.study23.figure %>% filter(exp == "Exp4
 
 exp4.study2.fig + exp4.study3.fig + plot_annotation(tag_levels = 'A')
 
-exp4.studies233.fig
 ```
 
 
